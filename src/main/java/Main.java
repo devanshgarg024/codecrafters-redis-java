@@ -18,8 +18,13 @@ public class Main {
           serverSocket.setReuseAddress(true);
           // Wait for connection from client.
           clientSocket = serverSocket.accept();
-          inputStream=getInputStream();
-          if(inputStream=="PING"){
+            InputStream input = clientSocket.getInputStream();
+            byte[] buffer = new byte[1024];
+
+            // Read the command from the client
+            int bytesRead = input.read(buffer);
+            String message = new String(buffer, 0, bytesRead);
+          if(message=="PING"){
                 clientSocket.getOutputStream().write("+PONG\r\n".getBytes());
           }
           else {
