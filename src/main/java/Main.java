@@ -38,13 +38,18 @@ public class Main {
 //             // Read the command from the client
         while(true){
             int bytesRead = input.read(buffer);
-            String message = new String(buffer, 0, bytesRead);
-//             System.out.println(message);
-            if(message.toLowerCase().contains("ping")){
+            String command = new String(buffer, 0, bytesRead);
+//             System.out.println(command);
+            if(command.toLowerCase().contains("ping")){
                 output.write("+PONG\r\n".getBytes());
             }
-            else if(message.toLowerCase().contains("close")){
+            else if(command.toLowerCase().contains("close")){
                 break;
+            }
+            else if(command.toLowerCase().contains("echo")){
+                bytesRead=input.read(buffer);
+                String message =new String(buffer,0,bytesRead);
+                output.write(message.getBytes());
             }
         }
 
