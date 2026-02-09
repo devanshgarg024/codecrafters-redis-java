@@ -24,15 +24,21 @@ public class Main {
              byte[] buffer = new byte[1024];
 //
 //             // Read the command from the client
-             int bytesRead = input.read(buffer);
+             while(true){
+                 int bytesRead = input.read(buffer);
              String message = new String(buffer, 0, bytesRead);
 //             System.out.println(message);
              if(message.contains("PING")){
                  clientSocket.getOutputStream().write("+PONG\r\n".getBytes());
              }
+             else if(message.contains("Close")){
             if (clientSocket != null) {
               clientSocket.close();
+              break;
             }
+
+             }
+             }
 
          }
         } catch (IOException e) {
