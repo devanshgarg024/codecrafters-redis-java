@@ -1,4 +1,5 @@
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -17,30 +18,25 @@ public class Main {
           // ensures that we don't run into 'Address already in use' errors
           serverSocket.setReuseAddress(true);
           // Wait for connection from client.
-          clientSocket = serverSocket.accept();
-            InputStream input = clientSocket.getInputStream();
-            byte[] buffer = new byte[1024];
-
-            // Read the command from the client
-            int bytesRead = input.read(buffer);
-            String message = new String(buffer, 0, bytesRead);
-          if(message=="PING"){
-                clientSocket.getOutputStream().write("+PONG\r\n".getBytes());
-          }
-          else {
-              clientSocket.getOutputStream().write("+UNIDENTIFIED\r\n".getBytes());
-
-          }
-        } catch (IOException e) {
-          System.out.println("IOException: " + e.getMessage());
-        } finally {
-          try {
+         while(true) {
+             clientSocket = serverSocket.accept();
+             InputStream input = clientSocket.getInputStream();
+             byte[] buffer = new byte[1024];
+//
+//             // Read the command from the client
+             int bytesRead = input.read(buffer);
+             String message = new String(buffer, 0, bytesRead);
+//             System.out.println(message);
+             if(message.contains("PING")){
+                 clientSocket.getOutputStream().write("+PONG\r\n".getBytes());
+             }
             if (clientSocket != null) {
               clientSocket.close();
             }
-          } catch (IOException e) {
-            System.out.println("IOException: " + e.getMessage());
-          }
+
+         }
+        } catch (IOException e) {
+          System.out.println("IOException: " + e.getMessage());
         }
   }
 }
