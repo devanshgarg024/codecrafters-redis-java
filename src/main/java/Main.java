@@ -18,7 +18,14 @@ public class Main {
           serverSocket.setReuseAddress(true);
           // Wait for connection from client.
           clientSocket = serverSocket.accept();
-          clientSocket.getOutputStream().write("+PONG\r\n".getBytes());
+          inputStream=getInputStream();
+          if(inputStream=="PING"){
+                clientSocket.getOutputStream().write("+PONG\r\n".getBytes());
+          }
+          else {
+              clientSocket.getOutputStream().write("+UNIDENTIFIED\r\n".getBytes());
+
+          }
         } catch (IOException e) {
           System.out.println("IOException: " + e.getMessage());
         } finally {
