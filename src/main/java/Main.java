@@ -173,13 +173,33 @@ public class Main {
                     }
                     break;
                 case "LPOP":
+                    if(words.size()==4){
+                        if(elementList.containsKey(words.get(3))){
+                            String key3=words.get(3);
+                            String removedElement=elementList.get(key3).remove(0);
+                            output.write(("$"+removedElement.length()+"\r\n"+removedElement+"\r\n").getBytes());
+                        }
+                        else{
+                            output.write(("$-1\r\n").getBytes());
+                        }
+                    }
+                    else{
+
                     if(elementList.containsKey(words.get(3))){
                         String key3=words.get(3);
-                        String removedElement=elementList.get(key3).remove(0);
+                        List<String> l=elementList.get(key3);
+                        int num=min(l.size(),Integer.parseInt(words.get(5)));
+                        output.write(("*"+String.valueOf(num)+"\r\n").getBytes());
+
+                        for(int i=0;i<num;i++){
+                            String removedElement=l.remove(0);
                         output.write(("$"+removedElement.length()+"\r\n"+removedElement+"\r\n").getBytes());
+                        }
                     }
                     else{
                         output.write(("$-1\r\n").getBytes());
+                    }
+
                     }
                     break;
 
