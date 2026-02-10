@@ -68,12 +68,13 @@ public class Main {
                     output.write((words.get(2)+"\r\n"+words.get(3)+"\r\n").getBytes());
                     break;
                 case "SET":
-                    db.put(words.get(3),words.get(4));
+                    db.put(words.get(3),words.get(5));
                     output.write("$2\r\nOK\r\n".getBytes());
                     break;
                 case "GET":
                     if(db.containsKey(words.get(3))){
                         String val=db.get(words.get(3));
+                        System.out.println(val);
                         output.write(("$"+String.valueOf(val.length())+"\r\n"+val+"\r\n").getBytes());
                     }
                     else{
