@@ -96,7 +96,7 @@ public class Main {
                     break;
                 case "GET":
                     LocalTime now = LocalTime.now();
-                    if(db.containsKey(words.get(3))&&exp.get(words.get(3)).isAfter(now)){
+                    if(db.containsKey(words.get(3))&&(!exp.containsKey(words.get(3))||exp.get(words.get(3)).isAfter(now))){
                         String val=db.get(words.get(3));
                         System.out.println(val);
                         output.write(("$"+String.valueOf(val.length())+"\r\n"+val+"\r\n").getBytes());
