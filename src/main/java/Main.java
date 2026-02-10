@@ -73,6 +73,7 @@ public class Main {
                     if(words.size()==6){
                         db.put(words.get(3),words.get(5));
                         output.write("+OK\r\n".getBytes());
+                        exp.remove(words.get(3));
                     }
                     else if(words.size()==10){
                         LocalTime expTime;
