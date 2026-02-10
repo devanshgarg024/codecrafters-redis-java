@@ -17,6 +17,7 @@ import java.time.LocalTime;
 public class Main {
     public static Map<String,String> db =new HashMap<>();
     public static Map<String,LocalTime> exp =new HashMap<>();
+    public static Map<String,List<String>> elementList =new HashMap<>();
     public static void main(String[] args) {
         System.out.println("Logs from your program will appear here!");
 
@@ -105,19 +106,21 @@ public class Main {
                         output.write("$-1\r\n".getBytes());
                     }
                     break;
-
+                case "RPUSH":
+                    String key=words.get(3);
+                    if(elementList.containsKey(key)){
+                        elementList.get(key).add(words.get(5));
+                    }
+                    else{
+                        List<String> l=new ArrayList<>();
+                        l.add(words.get(5));
+                        elementList.put(key,l);
+                    }
+                    int sizOfList=elementList.get(key).size();
+                    output.write((":"+String.valueOf(sizOfList)+"\r\n").getBytes());
+                    break;
 
             }
-
-//                System.out.println(command);
-//                if (command.toLowerCase().contains("ping")) {
-//                    output.write("+PONG\r\n".getBytes());
-//                } else if (command.toLowerCase().contains("close")) {
-//                    break;
-//                }
-//                else if(command.toLowerCase().contains("echo")){
-//
-//                }
             }
 
         } catch (IOException e) {
