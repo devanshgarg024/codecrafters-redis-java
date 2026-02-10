@@ -69,11 +69,16 @@ public class Main {
                     break;
                 case "SET":
                     db.put(words.get(3),words.get(4));
+                    break;
                 case "GET":
                     if(db.containsKey(words.get(3))){
                         String val=db.get(words.get(3));
                         output.write(("$"+String.valueOf(val.length())+"\r\n"+val+"\r\n").getBytes());
                     }
+                    else{
+                        output.write("$-1\r\n".getBytes());
+                    }
+                    break;
 
 
             }
