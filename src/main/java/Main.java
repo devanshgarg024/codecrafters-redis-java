@@ -14,6 +14,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.time.LocalTime;
 
+import static java.lang.Math.max;
+import static java.lang.Math.min;
+
 public class Main {
     public static Map<String,String> db =new HashMap<>();
     public static Map<String,LocalTime> exp =new HashMap<>();
@@ -124,6 +127,24 @@ public class Main {
                     int sizOfList=elementList.get(key).size();
                     output.write((":"+String.valueOf(sizOfList)+"\r\n").getBytes());
                     break;
+                case "LRANGE":
+                    if(elementList.containsKey(words.get(3))){
+                    List<String> l=elementList.get(words.get(3));
+                    int st=max(0,Integer.parseInt(words.get(5)));
+                    int en=min(l.size()-1,Integer.parseInt(words.get(7)));
+                        output.write(("*"+String.valueOf(max(0,en-st+1)) +"\r\n").getBytes());
+                    for(int i=st;i<=en;i++){
+                        output.write(("$"+String.valueOf(l.get(i).length())+"\r\n").getBytes());
+                        output.write((l.get(i)+"\r\n").getBytes());
+                    }
+                    }
+                    else{
+                        output.write(("*0\r\n").getBytes());
+
+                    }
+
+
+
 
             }
             }
