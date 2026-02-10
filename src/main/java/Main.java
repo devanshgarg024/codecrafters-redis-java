@@ -53,7 +53,6 @@ public class Main {
             while(true){
             Vector<String> words = new Vector<>();
             String begin=reader.readLine();
-//            System.out.println(begin);
             if(begin.startsWith("*")){
                 int num=Integer.parseInt(begin.substring(1));
                 for(int i=0;i<num;i++){
@@ -81,7 +80,6 @@ public class Main {
                     }
                     else if(words.size()==10){
                         LocalTime expTime;
-//                        System.out.println(words.get(7).toLowerCase());
                         if(words.get(7).toLowerCase().equals("ex")){
                             expTime = LocalTime.now().plusSeconds(Integer.parseInt(words.get(9)));
                         }
@@ -102,7 +100,6 @@ public class Main {
                     LocalTime now = LocalTime.now();
                     if(db.containsKey(words.get(3))&&(!exp.containsKey(words.get(3))||exp.get(words.get(3)).isAfter(now))){
                         String val=db.get(words.get(3));
-                        System.out.println(val);
                         output.write(("$"+String.valueOf(val.length())+"\r\n"+val+"\r\n").getBytes());
                     }
                     else{
@@ -130,8 +127,12 @@ public class Main {
                 case "LRANGE":
                     if(elementList.containsKey(words.get(3))){
                     List<String> l=elementList.get(words.get(3));
-                    int st=max(0,Integer.parseInt(words.get(5)));
-                    int en=min(l.size()-1,Integer.parseInt(words.get(7)));
+                        int endInd=Integer.parseInt(words.get(7));
+                        int stInd=Integer.parseInt(words.get(5));
+                    int st=(max(-1*l.size(),stInd)+l.size())%l.size();
+
+                    int en=(min(l.size()-1,endInd)+l.size())%l.size();
+//                        output.write(String.valueOf(en).getBytes());
                         output.write(("*"+String.valueOf(max(0,en-st+1)) +"\r\n").getBytes());
                     for(int i=st;i<=en;i++){
                         output.write(("$"+String.valueOf(l.get(i).length())+"\r\n").getBytes());
