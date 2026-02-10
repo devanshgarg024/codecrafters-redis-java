@@ -171,6 +171,18 @@ public class Main {
                     else{
                     output.write((":0\r\n").getBytes());
                     }
+                    break;
+                case "LPOP":
+                    if(elementList.containsKey(words.get(3))){
+                        String key3=words.get(3);
+                        String removedElement=elementList.get(key3).remove(0);
+                        output.write(("$"+removedElement.length()+"\r\n"+removedElement+"\r\n").getBytes());
+                    }
+                    else{
+                        output.write(("$-1\r\n").getBytes());
+                    }
+                    break;
+
 
 
 
