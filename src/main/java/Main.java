@@ -69,6 +69,7 @@ public class Main {
                     break;
                 case "SET":
                     db.put(words.get(3),words.get(4));
+                    output.write("$2\r\nOK\r\n".getBytes());
                     break;
                 case "GET":
                     if(db.containsKey(words.get(3))){
