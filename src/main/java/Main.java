@@ -10,8 +10,11 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.Vector;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Main {
+        public static Map<String,String> db =new HashMap<>();
     public static void main(String[] args) {
         System.out.println("Logs from your program will appear here!");
 
@@ -44,7 +47,7 @@ public class Main {
             while(true){
             Vector<String> words = new Vector<>();
             String begin=reader.readLine();
-            System.out.println(begin);
+//            System.out.println(begin);
             if(begin.startsWith("*")){
                 int num=Integer.parseInt(begin.substring(1));
                 for(int i=0;i<num;i++){
@@ -64,6 +67,15 @@ public class Main {
                 case "ECHO":
                     output.write((words.get(2)+"\r\n"+words.get(3)+"\r\n").getBytes());
                     break;
+                case "SET":
+                    db.put(words.get(3),words.get(4));
+                case "GET":
+                    if(db.containsKey(words.get(3))){
+                        String val=db.get(words.get(3));
+                        output.write(("$"+String.valueOf(val.length())+"\r\n"+val+"\r\n").getBytes());
+                    }
+
+
             }
 
 //                System.out.println(command);
