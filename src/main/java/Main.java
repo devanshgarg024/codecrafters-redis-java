@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.Vector;
 
 public class Main {
     public static void main(String[] args) {
@@ -36,28 +37,48 @@ public class Main {
     }
 
     private static void handleRequest(Socket clientSocket) {
-      try(clientSocket){
-        System.out.println("Processing on: " + Thread.currentThread());
-          BufferedReader reader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-        OutputStream output = clientSocket.getOutputStream();
-        byte[] buffer = new byte[1024];
-//
-//             // Read the command from the client
-        while(true){
-            String command = reader.readLine();
-//            String command = new String(buffer, 0, bytesRead);
-            System.out.println(command);
-            if(command.toLowerCase().contains("ping")){
-                output.write("+PONG\r\n".getBytes());
+        try (clientSocket) {
+            System.out.println("Processing on: " + Thread.currentThread());
+            BufferedReader reader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+            OutputStream output = clientSocket.getOutputStream();
+            while(true){
+            Vector<String> words = new Vector<>();
+            String begin=reader.readLine();
+            System.out.println(begin);
+            if(begin.startsWith("*")){
+                int num=Integer.parseInt(begin.substring(1));
+                for(int i=0;i<num;i++){
+                    words.add(reader.readLine());
+                    words.add(reader.readLine());
+                }
             }
-            else if(command.toLowerCase().contains("close")){
-                break;
-            }
-        }
 
-      }
-      catch(IOException e){
-          System.out.println("Error handling Client: "+ e.getMessage());
+
+//            for(int i=0;i<words.size();i++){
+//                System.out.println(words.get(i));
+//            }
+            switch(words.get(1)){
+                case "PING":
+                    output.write("+PONG\r\n".getBytes());
+                    break;
+                case "ECHO":
+                    output.write((words.get(2)+"\r\n"+words.get(3)+"\r\n").getBytes());
+                    break;
+            }
+
+//                System.out.println(command);
+//                if (command.toLowerCase().contains("ping")) {
+//                    output.write("+PONG\r\n".getBytes());
+//                } else if (command.toLowerCase().contains("close")) {
+//                    break;
+//                }
+//                else if(command.toLowerCase().contains("echo")){
+//
+//                }
+            }
+
+        } catch (IOException e) {
+            System.out.println("Error handling Client: " + e.getMessage());
         }
         // Do heavy I/O here (Database, API calls, etc.)
     }
