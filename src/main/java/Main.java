@@ -162,6 +162,15 @@ public class Main {
 
                     }
                     break;
+                case "LLEN":
+                    if(elementList.containsKey(words.get(3))){
+                    String key3=words.get(3);
+                    int sizOfList3=elementList.get(key3).size();
+                    output.write((":"+String.valueOf(sizOfList3)+"\r\n").getBytes());
+                    }
+                    else{
+                    output.write((":0\r\n").getBytes());
+                    }
 
 
 
