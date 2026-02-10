@@ -124,6 +124,24 @@ public class Main {
                     int sizOfList=elementList.get(key).size();
                     output.write((":"+String.valueOf(sizOfList)+"\r\n").getBytes());
                     break;
+                case "LPUSH":
+                    String key2=words.get(3);
+                    int numOfElement2=(words.size()-4)/2;
+                    if(elementList.containsKey(key2)){
+                        for(int i=0;i<numOfElement2;i++){
+                            elementList.get(key2).add(0,words.get(5+i*2));
+                        }
+                    }
+                    else{
+                        List<String> l=new ArrayList<>();
+                        for(int i=0;i<numOfElement2;i++){
+                            l.add(0,words.get(5+i*2));
+                        }
+                        elementList.put(key2,l);
+                    }
+                    int sizOfList2=elementList.get(key2).size();
+                    output.write((":"+String.valueOf(sizOfList2)+"\r\n").getBytes());
+                    break;
                 case "LRANGE":
                     if(elementList.containsKey(words.get(3))){
                     List<String> l=elementList.get(words.get(3));
@@ -143,6 +161,7 @@ public class Main {
                         output.write(("*0\r\n").getBytes());
 
                     }
+                    break;
 
 
 
