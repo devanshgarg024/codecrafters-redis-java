@@ -12,9 +12,11 @@ import java.util.concurrent.Executors;
 import java.util.Vector;
 import java.util.HashMap;
 import java.util.Map;
+import java.time.LocalTime;
 
 public class Main {
-        public static Map<String,String> db =new HashMap<>();
+    public static Map<String,String> db =new HashMap<>();
+    public static Map<String,LocalTime> exp =new HashMap<>();
     public static void main(String[] args) {
         System.out.println("Logs from your program will appear here!");
 
@@ -68,11 +70,32 @@ public class Main {
                     output.write((words.get(2)+"\r\n"+words.get(3)+"\r\n").getBytes());
                     break;
                 case "SET":
-                    db.put(words.get(3),words.get(5));
-                    output.write("+OK\r\n".getBytes());
+                    if(words.size()==6){
+                        db.put(words.get(3),words.get(5));
+                        output.write("+OK\r\n".getBytes());
+                    }
+                    else if(words.size()==10){
+                        LocalTime expTime;
+//                        System.out.println(words.get(7).toLowerCase());
+                        if(words.get(7).toLowerCase().equals("ex")){
+                            expTime = LocalTime.now().plusSeconds(Integer.parseInt(words.get(9)));
+                        }
+                        else if(words.get(7).toLowerCase().equals("px")){
+                            long nanoSecToAdd=Integer.parseInt(words.get(9));
+                            nanoSecToAdd=nanoSecToAdd*1000000;
+                            expTime = LocalTime.now().plusNanos(nanoSecToAdd);
+                        }
+                        else{
+                            return ;
+                        }
+                        db.put(words.get(3),words.get(5));
+                        exp.put(words.get(3),expTime);
+                        output.write("+OK\r\n".getBytes());
+                    }
                     break;
                 case "GET":
-                    if(db.containsKey(words.get(3))){
+                    LocalTime now = LocalTime.now();
+                    if(db.containsKey(words.get(3))&&exp.get(words.get(3)).isAfter(now)){
                         String val=db.get(words.get(3));
                         System.out.println(val);
                         output.write(("$"+String.valueOf(val.length())+"\r\n"+val+"\r\n").getBytes());
