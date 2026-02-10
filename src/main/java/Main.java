@@ -108,12 +108,17 @@ public class Main {
                     break;
                 case "RPUSH":
                     String key=words.get(3);
+                    int numOfElement=(words.size()-4)/2;
                     if(elementList.containsKey(key)){
-                        elementList.get(key).add(words.get(5));
+                        for(int i=0;i<numOfElement;i++){
+                        elementList.get(key).add(words.get(5+i*2));
+                        }
                     }
                     else{
                         List<String> l=new ArrayList<>();
-                        l.add(words.get(5));
+                        for(int i=0;i<numOfElement;i++){
+                            l.add(words.get(5+i*2));
+                        }
                         elementList.put(key,l);
                     }
                     int sizOfList=elementList.get(key).size();
