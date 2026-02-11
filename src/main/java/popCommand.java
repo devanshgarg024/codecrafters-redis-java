@@ -45,7 +45,8 @@ public class popCommand {
         LocalTime now = LocalTime.now();
         String response="";
         String key3=words.get(3);
-        int timeToBlock = Integer.parseInt(words.get(5));
+        float timeToBlockinf = Float.parseFloat(words.get(5))*1000;
+        int timeToBlock=(int)timeToBlockinf;
         if(!Main.elementList.containsKey(key3)){
             List<String> l=new ArrayList<>();
             Main.elementList.put(key3,l);
@@ -56,7 +57,8 @@ public class popCommand {
                 List<Main.user> temp=new ArrayList<>();
                 Main.PopExp.put(key3,temp);
             }
-            LocalTime expTime=now.plusSeconds(timeToBlock);
+            LocalTime expTime=now.plusNanos(timeToBlock*1000000);
+            System.out.println(timeToBlock);
             synchronized (l){
             if(timeToBlock==0){
                 Main.user a=new Main.user(clientSocket,now,now,false);
@@ -82,15 +84,15 @@ public class popCommand {
                     }
                     else {
                         Main.user u=null;
-                        now=LocalTime.now();
                         while(true){
+                        now=LocalTime.now();
                             long duration =ChronoUnit.MILLIS.between(now,expTime);
+                            if(duration<=0)break;
                             l.wait(duration);
+//                            System.out.println(now);
+//                            System.out.println(expTime);
                             u=check(key3,clientSocket);
                             if(u!=null)break;
-                            if(duration<=0){
-                                break;
-                            }
                         }
                         if(u==null){
                             response+=("*-1\r\n");
@@ -102,7 +104,6 @@ public class popCommand {
                         String removedElement=l.remove(0);
                         response+=("$"+removedElement.length()+"\r\n"+removedElement+"\r\n");
                         }
-
                     }
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt(); // Restore interrupted status
@@ -151,7 +152,7 @@ public class popCommand {
         for(int i=0;i<removeList.size();i++){
             l.remove(removeList.get(i));
         }
-        if(socketFound && (clientSocket==temp.clientSocket()))return temp;
+        if(socketFound && (clientSocket==temp.clientSocket())&& !Main.elementList.get(key).isEmpty())return temp;
         return null;
     }
 }
