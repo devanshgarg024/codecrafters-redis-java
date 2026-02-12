@@ -97,6 +97,8 @@ public class Main {
                 case "BLPOP":
                     output.write(popCommand.blpop(words,clientSocket).getBytes());
                     break;
+                case "TYPE":
+                    output.write(typeCommand.type(words).getBytes());
             }
             }
 
