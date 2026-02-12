@@ -3,7 +3,9 @@ import java.util.Vector;
 public class typeCommand {
     public static String type(Vector<String> words){
         String response="";
-        response+="string";
+        String key=words.get(3);
+        if(Main.db.containsKey(key))response+="+string\r\n";
+        else response+="+none\r\n";
         return response;
     }
 }
