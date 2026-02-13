@@ -76,7 +76,7 @@ public class popCommand {
                             u=check(key3,clientSocket);
                             if(u!=null)break;
                         }
-                        Main.PopExp.remove(u);
+                        Main.PopExp.get(key3).remove(u);
                         response+=("*2"+"\r\n");
                         response+=("$"+key3.length()+"\r\n"+key3+"\r\n");
                         String removedElement=l.remove(0);
@@ -89,8 +89,6 @@ public class popCommand {
                             long duration =ChronoUnit.MILLIS.between(now,expTime);
                             if(duration<=0)break;
                             l.wait(duration);
-//                            System.out.println(now);
-//                            System.out.println(expTime);
                             u=check(key3,clientSocket);
                             if(u!=null)break;
                         }
