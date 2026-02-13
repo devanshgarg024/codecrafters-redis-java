@@ -15,6 +15,26 @@ public class streamCommand {
         long milliseconds=0;
         int sequence=0;
         if(id.equals("*")){
+            milliseconds=System.currentTimeMillis();
+            if (temp.size() != 0) {
+                LinkedHashMap<String, String> lastEntry = temp.getLast();
+                String[] parts2 = lastEntry.get("id").split("-");
+                long lastmilliseconds=Long.parseLong(parts2[0]);
+                int lastSeq=Integer.parseInt(parts2[1]);
+                if(milliseconds<lastmilliseconds){
+                    response+="-ERR The ID specified in XADD is equal or smaller than the target stream top item\r\n";
+                    return response;
+                }
+                else if(milliseconds==lastmilliseconds){
+                    sequence=lastSeq+1;
+                }
+                else{
+                    sequence=0;
+                }
+            }
+            else{
+                sequence=0;
+            }
 
         }
         else{
