@@ -22,7 +22,7 @@ public class Main {
     public record user(Socket clientSocket, LocalTime startTime, LocalTime expTime,boolean willExp ){}
     public static Map<String, List<user>> PopExp=new HashMap<>();
     public static Map<String,String> db =new HashMap<>();
-    public static Map<String,LinkedHashMap<String,String>> streamdb =new HashMap<>();
+    public static Map<String,ArrayList<LinkedHashMap<String,String>>> streamdb =new HashMap<>();
     public static Map<String,LocalTime> exp =new HashMap<>();
     public static Map<String,List<String>> elementList =new HashMap<>();
     public static void main(String[] args) {
