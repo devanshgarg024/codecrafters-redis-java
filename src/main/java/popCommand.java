@@ -15,7 +15,7 @@ public class popCommand {
         if(words.size()==4){
             if(Main.elementList.containsKey(words.get(3))){
                 String key3=words.get(3);
-                String removedElement=Main.elementList.get(key3).remove(0);
+                String removedElement=Main.elementList.get(key3).removeFirst();
                 response+=(("$"+removedElement.length()+"\r\n"+removedElement+"\r\n"));
             }
             else{
@@ -31,7 +31,7 @@ public class popCommand {
                 response+=(("*"+String.valueOf(num)+"\r\n"));
 
                 for(int i=0;i<num;i++){
-                    String removedElement=l.remove(0);
+                    String removedElement=l.removeFirst();
                     response+=(("$"+removedElement.length()+"\r\n"+removedElement+"\r\n"));
                 }
             }
@@ -79,8 +79,9 @@ public class popCommand {
                         Main.PopExp.get(key3).remove(u);
                         response+=("*2"+"\r\n");
                         response+=("$"+key3.length()+"\r\n"+key3+"\r\n");
-                        String removedElement=l.remove(0);
+                        String removedElement=l.removeFirst();
                         response+=("$"+removedElement.length()+"\r\n"+removedElement+"\r\n");
+                        l.notifyAll();
                     }
                     else {
                         Main.user u=null;
@@ -99,8 +100,9 @@ public class popCommand {
                         Main.PopExp.remove(u);
                         response+=("*2"+"\r\n");
                         response+=("$"+key3.length()+"\r\n"+key3+"\r\n");
-                        String removedElement=l.remove(0);
+                        String removedElement=l.removeFirst();
                         response+=("$"+removedElement.length()+"\r\n"+removedElement+"\r\n");
+                        l.notifyAll();
                         }
                     }
                 } catch (InterruptedException e) {
@@ -113,7 +115,7 @@ public class popCommand {
         else{
             response+=(("*2"+"\r\n"));
             response+=(("$"+key3.length()+"\r\n"+key3+"\r\n"));
-            String removedElement=l.remove(0);
+            String removedElement=l.removeFirst();
             response+=(("$"+removedElement.length()+"\r\n"+removedElement+"\r\n"));
         }
 
