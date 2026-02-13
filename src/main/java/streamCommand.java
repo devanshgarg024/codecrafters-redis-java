@@ -180,4 +180,35 @@ public class streamCommand {
 
         return response.toString();
     }
+    public static String xread(Vector<String> words) {
+        String response="";
+        int n=(words.size()-4)/4;
+        response+=("*"+String.valueOf(n)+"\r\n");
+        for(int i=0;i<n;i++){
+            response+=("*2\r\n");
+            String key=words.get(5+2*i);
+            String st=words.get(5+2*n+2*i);
+            if(!st.equals("-")&&st.contains("-")){
+            String[] parts = st.split("-");
+
+            String seq= String.valueOf(Integer.parseInt(parts[1])+1);
+            st=parts[0]+"-"+seq;
+            }
+
+            response+=("$"+String.valueOf(key.length())+"\r\n"+key+"\r\n");
+            Vector<String> temp=new Vector<>();
+            temp.add("XRANGE");
+            temp.add("XRANGE");
+            temp.add("XRANGE");
+            temp.add(key);
+            temp.add("XRANGE");
+            temp.add(st);
+            temp.add("XRANGE");
+            temp.add("+");
+            response+=xrange(temp);
+        }
+            System.out.println(response);
+        return response;
+
+    }
     }

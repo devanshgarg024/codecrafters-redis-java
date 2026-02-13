@@ -108,6 +108,9 @@ public class Main {
                 case "XRANGE":
                     output.write(streamCommand.xrange(words).getBytes());
                     break;
+                case "XREAD":
+                    output.write(streamCommand.xread(words).getBytes());
+                    break;
             }
             }
 
