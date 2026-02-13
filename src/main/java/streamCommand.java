@@ -129,7 +129,7 @@ public class streamCommand {
                 stseq = 0;
             }
         }
-        if(!en.equals("-")){
+        if(!en.equals("+")){
             if (en.contains("-")) {
                 String[] parts = en.split("-");
                 enmil = Long.parseLong(parts[0]);
