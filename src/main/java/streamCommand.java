@@ -118,11 +118,8 @@ public class streamCommand {
         long enmil = 0;
         int stseq = 0;
         int enseq = 0;
-        if(st=="-"){
-            stmil=0;
-            stseq=0;
-        }
-        else{
+        if(!st.equals("-")){
+//            System.out.println("fd");
             if (st.contains("-")) {
                 String[] parts = st.split("-");
                 stmil = Long.parseLong(parts[0]);
