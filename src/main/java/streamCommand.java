@@ -115,9 +115,9 @@ public class streamCommand {
         String en = words.get(7);
 
         long stmil = 0;
-        long enmil = 0;
+        long enmil = -1;
         int stseq = 0;
-        int enseq = 0;
+        int enseq = -1;
         if(!st.equals("-")){
 //            System.out.println("fd");
             if (st.contains("-")) {
@@ -129,13 +129,15 @@ public class streamCommand {
                 stseq = 0;
             }
         }
-        if (en.contains("-")) {
-            String[] parts = en.split("-");
-            enmil = Long.parseLong(parts[0]);
-            enseq = Integer.parseInt(parts[1]);
-        } else {
-            enmil = Long.parseLong(en);
-            enseq = -1;
+        if(!en.equals("-")){
+            if (en.contains("-")) {
+                String[] parts = en.split("-");
+                enmil = Long.parseLong(parts[0]);
+                enseq = Integer.parseInt(parts[1]);
+            } else {
+                enmil = Long.parseLong(en);
+                enseq = -1;
+            }
         }
         ArrayList<LinkedHashMap<String, String>> temp = Main.streamdb.get(key);
         if (temp == null) {
@@ -149,7 +151,7 @@ public class streamCommand {
             int lastSeq = Integer.parseInt(parts2[1]);
             boolean afterStart = (lastmilliseconds > stmil) ||
                     (lastmilliseconds == stmil && lastSeq >= stseq);
-            boolean beforeEnd = (lastmilliseconds < enmil) ||
+            boolean beforeEnd = (lastmilliseconds < enmil || enmil==-1) ||
                     (lastmilliseconds == enmil && (enseq == -1 || lastSeq <= enseq));
 
             if (afterStart && beforeEnd) {
