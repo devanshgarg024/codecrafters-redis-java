@@ -105,6 +105,9 @@ public class Main {
                 case "XADD":
                     output.write(streamCommand.xadd(words).getBytes());
                     break;
+                case "XRANGE":
+                    output.write(streamCommand.xrange(words).getBytes());
+                    break;
             }
             }
 
