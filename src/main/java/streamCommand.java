@@ -190,7 +190,12 @@ public class streamCommand {
         response+=("*1"+"\r\n");
         response+=("*2\r\n");
             int timeinmill=Integer.parseInt(words.get(5));
+
             String key=words.get(9);
+            if (!Main.streamdb.containsKey(key)) {
+                ArrayList<LinkedHashMap<String, String>> temp = new ArrayList<>();
+                Main.streamdb.put(key, temp);
+            }
             String st=words.get(11);
             if(!st.equals("-")&&st.contains("-")){
                 String[] parts = st.split("-");
@@ -212,17 +217,18 @@ public class streamCommand {
             String firstres=xrange(v);
 
             if(!firstres.equals("*0\r\n")){
-//                System.out.println(key);
-
                 response+=firstres;
                 return response;
             }
+            //point 1
                 synchronized (temp){
+                //point 2
+
                     try{
                         temp.wait(timeinmill);
                     }
                     catch (InterruptedException e) {
-                        Thread.currentThread().interrupt(); // Restore interrupted status
+                        Thread.currentThread().interrupt();
                         return ""; // Or handle appropriately
                     }
 
@@ -251,6 +257,10 @@ public class streamCommand {
         for(int i=0;i<n;i++){
             response+=("*2\r\n");
             String key=words.get(5+2*i);
+            if (!Main.streamdb.containsKey(key)) {
+                ArrayList<LinkedHashMap<String, String>> temp = new ArrayList<>();
+                Main.streamdb.put(key, temp);
+            }
             String st=words.get(5+2*n+2*i);
             if(!st.equals("-")&&st.contains("-")){
             String[] parts = st.split("-");
