@@ -68,14 +68,15 @@ public class Main {
                 output.write("+OK\r\n".getBytes());
                 continue;
             }
-            if(ishold){
-                if(words.get(1).equals("EXEC")){
-                    ishold=false;
-                   while(!queue.isEmpty()){
-                       executeCommand(queue.remove(),output,clientSocket,ishold);
-                   }
+            if(words.get(1).equals("EXEC")){
+                ishold=false;
+                while(!queue.isEmpty()){
+                    executeCommand(queue.remove(),output,clientSocket,ishold);
                 }
-                else queue.add(words);
+                continue;
+            }
+            if(ishold){
+                queue.add(words);
                 continue;
             }
                 executeCommand(words, output, clientSocket, ishold);
