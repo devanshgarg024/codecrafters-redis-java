@@ -160,7 +160,7 @@ public class streamCommand {
         }
         StringBuilder response = new StringBuilder();
         response.append("*").append(matches.size()).append("\r\n");
-
+        synchronized (temp){
         for (var match : matches) {
             response.append("*2\r\n");
             String id = match.get("id");
@@ -177,11 +177,77 @@ public class streamCommand {
                 response.append("$").append(v.length()).append("\r\n").append(v).append("\r\n");
             }
         }
+        temp.notifyAll();
+
+        }
 
         return response.toString();
     }
     public static String xread(Vector<String> words) {
         String response="";
+
+        if(words.get(3).toUpperCase().equals("BLOCK")){
+        response+=("*1"+"\r\n");
+        response+=("*2\r\n");
+            int timeinmill=Integer.parseInt(words.get(5));
+            String key=words.get(9);
+            String st=words.get(11);
+            if(!st.equals("-")&&st.contains("-")){
+                String[] parts = st.split("-");
+
+                String seq= String.valueOf(Integer.parseInt(parts[1])+1);
+                st=parts[0]+"-"+seq;
+            }
+            ArrayList<LinkedHashMap<String, String>> temp = Main.streamdb.get(key);
+            response+=("$"+String.valueOf(key.length())+"\r\n"+key+"\r\n");
+            Vector<String> v=new Vector<>();
+            v.add("XRANGE");
+            v.add("XRANGE");
+            v.add("XRANGE");
+            v.add(key);
+            v.add("XRANGE");
+            v.add(st);
+            v.add("XRANGE");
+            v.add("+");
+            String firstres=xrange(v);
+
+            if(!firstres.equals("*0\r\n")){
+//                System.out.println(key);
+
+                response+=firstres;
+                return response;
+            }
+                synchronized (temp){
+                    try{
+                        temp.wait(timeinmill);
+                        System.out.println("dfs");
+
+                    }
+                    catch (InterruptedException e) {
+                        Thread.currentThread().interrupt(); // Restore interrupted status
+                        return ""; // Or handle appropriately
+                    }
+
+                }
+
+            v=new Vector<>();
+            v.add("XRANGE");
+            v.add("XRANGE");
+            v.add("XRANGE");
+            v.add(key);
+            v.add("XRANGE");
+            v.add(st);
+            v.add("XRANGE");
+            v.add("+");
+            firstres=xrange(v);
+            if(!firstres.equals("*0\r\n")){
+                response+=firstres;
+            }
+            else{
+                response="*-1\r\n";
+            }
+        }
+        else{
         int n=(words.size()-4)/4;
         response+=("*"+String.valueOf(n)+"\r\n");
         for(int i=0;i<n;i++){
@@ -207,7 +273,9 @@ public class streamCommand {
             temp.add("+");
             response+=xrange(temp);
         }
-            System.out.println(response);
+        }
+
+//            System.out.println(response);
         return response;
 
     }
