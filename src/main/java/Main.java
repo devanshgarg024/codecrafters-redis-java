@@ -114,6 +114,9 @@ public class Main {
                 case "INCR":
                     output.write(OperationCommand.incr(words).getBytes());
                     break;
+                case "MULTI":
+                    output.write("+OK\r\n".getBytes());
+                    break;
             }
             }
 
