@@ -76,7 +76,7 @@ public class Main {
                 }
                 else{
                     ishold=false;
-                    response+=("*"+queue.size());
+                    response+=("*"+queue.size()+"\r\n");
                     while(!queue.isEmpty()){
                         executeCommand(queue.remove(),output,clientSocket,ishold);
                     }
