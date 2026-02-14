@@ -69,12 +69,22 @@ public class Main {
                 continue;
             }
             if(words.get(1).equals("EXEC")){
-                ishold=false;
-                while(!queue.isEmpty()){
-                    executeCommand(queue.remove(),output,clientSocket,ishold);
+                String response="";
+                if(ishold==false){
+                    response+="-ERR EXEC without MULTI\r\n";
+
                 }
+                else{
+                    ishold=false;
+                    response+=("*"+queue.size());
+                    while(!queue.isEmpty()){
+                        executeCommand(queue.remove(),output,clientSocket,ishold);
+                    }
+                }
+                output.write(response.getBytes());
                 continue;
             }
+
             if(ishold){
                 queue.add(words);
                 continue;
