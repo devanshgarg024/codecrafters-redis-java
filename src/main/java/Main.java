@@ -84,6 +84,17 @@ public class Main {
                 }
                 continue;
             }
+            if(words.get(1).equals("DISCARD")){
+                if(ishold){
+                    queue.clear();
+                    output.write("+OK\r\n".getBytes());
+                    ishold=false;
+                }
+                else{
+                    output.write("-ERR DISCARD without MULTI\r\n".getBytes());
+                }
+                continue;
+            }
 
             if(ishold){
                 queue.add(words);
