@@ -1,21 +1,18 @@
+import com.sun.source.doctree.ValueTree;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.Vector;
-import java.util.HashMap;
-import java.util.Map;
 import java.time.LocalTime;
 
 import static java.lang.Math.max;
 import static java.lang.Math.min;
-import java.util.LinkedHashMap;
 
 
 public class Main {
@@ -54,7 +51,8 @@ public class Main {
             System.out.println("Processing on: " + Thread.currentThread());
             BufferedReader reader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
             OutputStream output = clientSocket.getOutputStream();
-            LocalTime now = LocalTime.now();
+            Queue<Vector<String>> queue = new LinkedList<>();
+            boolean ishold=false;
             while(true){
             Vector<String> words = new Vector<>();
             String begin=reader.readLine();
@@ -65,64 +63,86 @@ public class Main {
                     words.add(reader.readLine());
                 }
             }
+            if(words.get(1).equals("MULTI")){
+                ishold=true;
+                output.write("+OK\r\n".getBytes());
+                continue;
+            }
+            if(ishold){
+                if(words.get(1).equals("EXEC")){
+                    ishold=false;
+                   while(!queue.isEmpty()){
+                       executeCommand(queue.remove(),output,clientSocket,ishold);
+                   }
+                }
+                else queue.add(words);
+                continue;
+            }
+                executeCommand(words, output, clientSocket, ishold);
 //            for(int i=0;i<words.size();i++){
 //                System.out.println(words.get(i));
 //            }
-            switch(words.get(1)){
-                case "PING":
-                    output.write("+PONG\r\n".getBytes());
-                    break;
-                case "ECHO":
-                    output.write((words.get(2)+"\r\n"+words.get(3)+"\r\n").getBytes());
-                    break;
-                case "SET":
-                    output.write(getSetCommand.set(words).getBytes());
-                    break;
-                case "GET":
-                    output.write(getSetCommand.get(words).getBytes());
-                    break;
-                case "RPUSH":
-                    output.write(pushRangeCommand.rpush(words).getBytes());
-                    break;
-                case "LPUSH":
-                    output.write(pushRangeCommand.lpush(words).getBytes());
-                    break;
-                case "LRANGE":
-                    output.write(pushRangeCommand.lrange(words).getBytes());
-                    break;
-                case "LLEN":
-                    output.write(pushRangeCommand.llen(words).getBytes());
-                    break;
-                case "LPOP":
-                    output.write(popCommand.lpop(words).getBytes());
-                    break;
-                case "BLPOP":
-                    output.write(popCommand.blpop(words,clientSocket).getBytes());
-                    break;
-                case "TYPE":
-                    output.write(typeCommand.type(words).getBytes());
-                    break;
-                case "XADD":
-                    output.write(streamCommand.xadd(words).getBytes());
-                    break;
-                case "XRANGE":
-                    output.write(streamCommand.xrange(words).getBytes());
-                    break;
-                case "XREAD":
-                    output.write(streamCommand.xread(words).getBytes());
-                    break;
-                case "INCR":
-                    output.write(OperationCommand.incr(words).getBytes());
-                    break;
-                case "MULTI":
-                    output.write("+OK\r\n".getBytes());
-                    break;
-            }
+
+
             }
 
         } catch (IOException e) {
             System.out.println("Error handling Client: " + e.getMessage());
         }
         // Do heavy I/O here (Database, API calls, etc.)
+    }
+    public static void executeCommand(Vector<String> words,OutputStream output, Socket clientSocket, boolean ishold ){
+        try{
+
+            switch(words.get(1)){
+            case "PING":
+                output.write("+PONG\r\n".getBytes());
+                break;
+            case "ECHO":
+                output.write((words.get(2)+"\r\n"+words.get(3)+"\r\n").getBytes());
+                break;
+            case "SET":
+                output.write(getSetCommand.set(words).getBytes());
+                break;
+            case "GET":
+                output.write(getSetCommand.get(words).getBytes());
+                break;
+            case "RPUSH":
+                output.write(pushRangeCommand.rpush(words).getBytes());
+                break;
+            case "LPUSH":
+                output.write(pushRangeCommand.lpush(words).getBytes());
+                break;
+            case "LRANGE":
+                output.write(pushRangeCommand.lrange(words).getBytes());
+                break;
+            case "LLEN":
+                output.write(pushRangeCommand.llen(words).getBytes());
+                break;
+            case "LPOP":
+                output.write(popCommand.lpop(words).getBytes());
+                break;
+            case "BLPOP":
+                output.write(popCommand.blpop(words,clientSocket).getBytes());
+                break;
+            case "TYPE":
+                output.write(typeCommand.type(words).getBytes());
+                break;
+            case "XADD":
+                output.write(streamCommand.xadd(words).getBytes());
+                break;
+            case "XRANGE":
+                output.write(streamCommand.xrange(words).getBytes());
+                break;
+            case "XREAD":
+                output.write(streamCommand.xread(words).getBytes());
+                break;
+            case "INCR":
+                output.write(OperationCommand.incr(words).getBytes());
+                break;
+        }
+         } catch (IOException e) {
+                System.out.println("Error handling Client: " + e.getMessage());
+            }
     }
 }
