@@ -72,16 +72,16 @@ public class Main {
                 String response="";
                 if(ishold==false){
                     response+="-ERR EXEC without MULTI\r\n";
-
+                    output.write(response.getBytes());
                 }
                 else{
                     ishold=false;
                     response+=("*"+queue.size()+"\r\n");
+                    output.write(response.getBytes());
                     while(!queue.isEmpty()){
                         executeCommand(queue.remove(),output,clientSocket,ishold);
                     }
                 }
-                output.write(response.getBytes());
                 continue;
             }
 
