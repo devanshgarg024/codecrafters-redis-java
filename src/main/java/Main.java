@@ -87,6 +87,7 @@ public class Main {
 
             if(ishold){
                 queue.add(words);
+                output.write("+QUEUED\r\n".getBytes());
                 continue;
             }
                 executeCommand(words, output, clientSocket, ishold);
