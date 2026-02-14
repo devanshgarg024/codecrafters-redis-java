@@ -111,6 +111,8 @@ public class Main {
                 case "XREAD":
                     output.write(streamCommand.xread(words).getBytes());
                     break;
+                case "INCR":
+                    output.write(OperationCommand.incr(words).getBytes());
             }
             }
 
