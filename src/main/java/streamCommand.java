@@ -106,7 +106,11 @@ public class streamCommand {
             }
             temp.add(Entry);
             response += ("$" + String.valueOf(EntryId.length()) + "\r\n" + EntryId + "\r\n");
-            return response;
+        synchronized (temp){
+            temp.notifyAll();
+        }
+
+        return response;
 
         }
     public static String xrange(Vector<String> words) {
@@ -160,7 +164,6 @@ public class streamCommand {
         }
         StringBuilder response = new StringBuilder();
         response.append("*").append(matches.size()).append("\r\n");
-        synchronized (temp){
         for (var match : matches) {
             response.append("*2\r\n");
             String id = match.get("id");
@@ -176,9 +179,6 @@ public class streamCommand {
                 response.append("$").append(k.length()).append("\r\n").append(k).append("\r\n");
                 response.append("$").append(v.length()).append("\r\n").append(v).append("\r\n");
             }
-        }
-        temp.notifyAll();
-
         }
 
         return response.toString();
@@ -225,7 +225,9 @@ public class streamCommand {
                 //point 2
 
                     try{
+                        System.out.println("ds");
                         temp.wait(timeinmill);
+                        System.out.println("dsss");
                     }
                     catch (InterruptedException e) {
                         Thread.currentThread().interrupt();
