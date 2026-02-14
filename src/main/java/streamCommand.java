@@ -197,13 +197,21 @@ public class streamCommand {
                 Main.streamdb.put(key, temp);
             }
             String st=words.get(11);
+            ArrayList<LinkedHashMap<String, String>> temp = Main.streamdb.get(key);
+            if(st.equals("$")){
+                if(temp.isEmpty()){
+                    st="0-0";
+                }
+                else{
+                    st=temp.getLast().get("id");
+                }
+            }
             if(!st.equals("-")&&st.contains("-")){
                 String[] parts = st.split("-");
 
                 String seq= String.valueOf(Integer.parseInt(parts[1])+1);
                 st=parts[0]+"-"+seq;
             }
-            ArrayList<LinkedHashMap<String, String>> temp = Main.streamdb.get(key);
             response+=("$"+String.valueOf(key.length())+"\r\n"+key+"\r\n");
             Vector<String> v=new Vector<>();
             v.add("XRANGE");
@@ -225,9 +233,7 @@ public class streamCommand {
                 //point 2
 
                     try{
-                        System.out.println("ds");
                         temp.wait(timeinmill);
-                        System.out.println("dsss");
                     }
                     catch (InterruptedException e) {
                         Thread.currentThread().interrupt();
