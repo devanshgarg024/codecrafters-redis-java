@@ -220,8 +220,6 @@ public class streamCommand {
                 synchronized (temp){
                     try{
                         temp.wait(timeinmill);
-                        System.out.println("dfs");
-
                     }
                     catch (InterruptedException e) {
                         Thread.currentThread().interrupt(); // Restore interrupted status
