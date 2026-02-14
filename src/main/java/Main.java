@@ -113,6 +113,7 @@ public class Main {
                     break;
                 case "INCR":
                     output.write(OperationCommand.incr(words).getBytes());
+                    break;
             }
             }
 
