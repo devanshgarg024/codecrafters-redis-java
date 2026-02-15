@@ -24,8 +24,11 @@ public class Main {
     public static Map<String,List<String>> elementList =new HashMap<>();
     public static void main(String[] args) {
         System.out.println("Logs from your program will appear here!");
-
-        int port = 6379;
+        int port;
+                port=6379;
+            if(args.length>=1&&args[0].equals("--port")){
+                port=Integer.parseInt(args[1]);
+            }
 
         // FIX: Create the executor OUTSIDE the try-with-resources block
         ExecutorService executor = Executors.newCachedThreadPool();
@@ -70,7 +73,7 @@ public class Main {
             }
             if(words.get(1).equals("EXEC")){
                 String response="";
-                if(ishold==false){
+                if(!ishold){
                     response+="-ERR EXEC without MULTI\r\n";
                     output.write(response.getBytes());
                 }
