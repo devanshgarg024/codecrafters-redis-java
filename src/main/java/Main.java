@@ -29,7 +29,7 @@ public class Main {
             if(args.length>=1&&args[0].equals("--port")){
                 port=Integer.parseInt(args[1]);
             }
-            if(port!=6379)role="slave";
+            if(args.length>=3&&args[0].equals("--replicaof"))role="slave";
 
         // FIX: Create the executor OUTSIDE the try-with-resources block
         ExecutorService executor = Executors.newCachedThreadPool();
