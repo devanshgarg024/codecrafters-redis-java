@@ -100,7 +100,7 @@ public class Main {
                 continue;
             }
             if(words.get(1).equals("INFO")){
-                output.write(("$"+role.length()+"\r\nrole:"+role+"\r\n").getBytes());
+                output.write(("$"+role.length()+5+"\r\nrole:"+role+"\r\n").getBytes());
             }
 
             if(ishold){
