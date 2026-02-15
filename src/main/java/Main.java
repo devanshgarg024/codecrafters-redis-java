@@ -22,13 +22,14 @@ public class Main {
     public static Map<String,ArrayList<LinkedHashMap<String,String>>> streamdb =new HashMap<>();
     public static Map<String,LocalTime> exp =new HashMap<>();
     public static Map<String,List<String>> elementList =new HashMap<>();
+    public static String role="master";
     public static void main(String[] args) {
         System.out.println("Logs from your program will appear here!");
-        int port;
-                port=6379;
+        int port=6379;
             if(args.length>=1&&args[0].equals("--port")){
                 port=Integer.parseInt(args[1]);
             }
+            if(port!=6379)role="slave";
 
         // FIX: Create the executor OUTSIDE the try-with-resources block
         ExecutorService executor = Executors.newCachedThreadPool();
@@ -97,6 +98,9 @@ public class Main {
                     output.write("-ERR DISCARD without MULTI\r\n".getBytes());
                 }
                 continue;
+            }
+            if(words.get(1).equals("INFO")){
+                output.write(("$11\r\nrole:"+role+"\r\n").getBytes());
             }
 
             if(ishold){
