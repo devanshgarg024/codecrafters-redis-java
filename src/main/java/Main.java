@@ -40,16 +40,26 @@ public class Main {
 //            masterPort=Integer.parseInt(args[4]);
 
         }
+        ExecutorService executor = Executors.newCachedThreadPool();
         if(!role.equals("master")){
+
             try(Socket slaveSocket=new Socket("localhost",6379)){
-            OutputStream output = slaveSocket.getOutputStream();
-            output.write("*1\r\n$4\r\nPING\r\n".getBytes());
+            BufferedReader reader = new BufferedReader(new InputStreamReader(slaveSocket.getInputStream()));
+                slaveSocket.getOutputStream().write("*1\r\n$4\r\nPING\r\n".getBytes());
+                slaveSocket.getOutputStream().flush();
+                reader.readLine();
+                slaveSocket.getOutputStream().write("*3\r\n$8\r\nREPLCONF\r\n$14\r\nlistening-port\r\n$4\r\n6380\r\n".getBytes());
+                slaveSocket.getOutputStream().flush();
+                reader.readLine();
+                slaveSocket.getOutputStream().write("*3\r\n$8\r\nREPLCONF\r\n$4\r\ncapa\r\n$6\r\npsync2\r\n".getBytes());
+                slaveSocket.getOutputStream().flush();
+                reader.readLine();
+
             }
             catch(IOException e) {
                 System.out.println("Could not connect to master: " + e.getMessage());
             }
         }
-        ExecutorService executor = Executors.newCachedThreadPool();
         try (ServerSocket serverSocket = new ServerSocket(port)) {
             serverSocket.setReuseAddress(true);
             System.out.println("Redis server started on port " + port);
@@ -73,63 +83,74 @@ public class Main {
             Queue<Vector<String>> queue = new LinkedList<>();
             boolean ishold=false;
             while(true){
-            Vector<String> words = new Vector<>();
-            String begin=reader.readLine();
-            if(begin.startsWith("*")){
-                int num=Integer.parseInt(begin.substring(1));
-                for(int i=0;i<num;i++){
-                    words.add(reader.readLine());
-                    words.add(reader.readLine());
-                }
-            }
-            if(words.get(1).equals("MULTI")){
-                ishold=true;
-                output.write("+OK\r\n".getBytes());
-                continue;
-            }
-            if(words.get(1).equals("EXEC")){
-                String response="";
-                if(!ishold){
-                    response+="-ERR EXEC without MULTI\r\n";
-                    output.write(response.getBytes());
-                }
-                else{
-                    ishold=false;
-                    response+=("*"+queue.size()+"\r\n");
-                    output.write(response.getBytes());
-                    while(!queue.isEmpty()){
-                        executeCommand(queue.remove(),output,clientSocket,ishold);
+                Vector<String> words = new Vector<>();
+                String begin=reader.readLine();
+                if (begin == null) break;
+                if(begin.startsWith("*")){
+                    int num=Integer.parseInt(begin.substring(1));
+                    for(int i=0;i<num;i++){
+                        words.add(reader.readLine()) ;
+                        words.add(reader.readLine());
                     }
                 }
-                continue;
-            }
-            if(words.get(1).equals("DISCARD")){
-                if(ishold){
-                    queue.clear();
-                    output.write("+OK\r\n".getBytes());
-                    ishold=false;
-                }
-                else{
-                    output.write("-ERR DISCARD without MULTI\r\n".getBytes());
-                }
-                continue;
-            }
-            if(words.get(1).equals("INFO")){
-                output.write(("$"+(role.length()+5+40+5+31)+"\r\nrole:"+role+"\n").getBytes());
-                output.write(("master_replid:8371b4fb1155b71f4a04d3e1bc3e18c4a990aeeb\n").getBytes());
-                output.write(("master_repl_offset:0\r\n").getBytes());
-            }
+                switch (words.get(1).toUpperCase()) {
+                    case "MULTI":
+                        ishold = true;
+                        output.write("+OK\r\n".getBytes());
+                        output.flush();
+                        break;
 
-            if(ishold){
-                queue.add(words);
-                output.write("+QUEUED\r\n".getBytes());
-                continue;
-            }
-                executeCommand(words, output, clientSocket, ishold);
-//            for(int i=0;i<words.size();i++){
-//                System.out.println(words.get(i));
-//            }
+                    case "EXEC":
+                        if (!ishold) {
+                            output.write("-ERR EXEC without MULTI\r\n".getBytes());
+                            output.flush();
 
+                        } else {
+                            ishold = false;
+                            String response = "*" + queue.size() + "\r\n";
+                            output.write(response.getBytes());
+                            output.flush();
+
+                            while (!queue.isEmpty()) {
+                                executeCommand(queue.remove(), output, clientSocket);
+                                output.flush();
+                            }
+                        }
+                        break;
+
+                    case "DISCARD":
+                        if (ishold) {
+                            queue.clear();
+                            output.write("+OK\r\n".getBytes());
+                            output.flush();
+
+                            ishold = false;
+                        } else {
+                            output.write("-ERR DISCARD without MULTI\r\n".getBytes());
+                            output.flush();
+
+                        }
+                        break;
+
+                    case "INFO":
+                        String infoContent = "role:" + role + "\r\n" +
+                                "master_replid:8371b4fb1155b71f4a04d3e1bc3e18c4a990aeeb\r\n" +
+                                "master_repl_offset:0";
+                        System.out.println("dsf");
+                        output.write(("$" + infoContent.length() + "\r\n" + infoContent+"\r\n").getBytes());
+                        System.out.println("dsf");
+                        output.flush();
+                        break;
+                    default:
+                        if(ishold){
+                            queue.add(words);
+                            output.write("+QUEUED\r\n".getBytes());
+                            break;
+                        }
+                        executeCommand(words, output, clientSocket);
+                        output.flush();
+                        break;
+                }
 
             }
 
@@ -138,10 +159,10 @@ public class Main {
         }
         // Do heavy I/O here (Database, API calls, etc.)
     }
-    public static void executeCommand(Vector<String> words,OutputStream output, Socket clientSocket, boolean ishold ){
+    public static void executeCommand(Vector<String> words,OutputStream output, Socket clientSocket){
         try{
 
-            switch(words.get(1)){
+            switch(words.get(1).toUpperCase()){
             case "PING":
                 output.write("+PONG\r\n".getBytes());
                 break;
@@ -187,6 +208,15 @@ public class Main {
             case "INCR":
                 output.write(OperationCommand.incr(words).getBytes());
                 break;
+            case "REPLCONF":
+//                System.out.println("fs");
+
+                output.write("+OK\r\n".getBytes());
+                break;
+            default:
+                output.write("-ERR unknown command\r\n".getBytes());
+                break;
+
         }
          } catch (IOException e) {
                 System.out.println("Error handling Client: " + e.getMessage());
