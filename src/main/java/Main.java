@@ -10,6 +10,7 @@ import java.util.concurrent.Executors;
 import java.time.LocalTime;
 import java.util.stream.Collectors;
 import java.security.SecureRandom;
+import java.util.Base64;
 
 public class Main {
     public record user(Socket clientSocket, LocalTime startTime, LocalTime expTime,boolean willExp ){}
@@ -21,6 +22,7 @@ public class Main {
     public static String role="master";
     public static String mastersReplID="?";
     public static int offset=-1;
+    public static String RDBfile="UkVESVMwMDEx+glyZWRpcy12ZXIFNy4yLjD6CnJlZGlzLWJpdHPAQPoFY3RpbWXCbQi8ZfoIdXNlZC1tZW3CsMQQAPoIYW9mLWJhc2XAAP/wbjv+wP9aog==";
 
     static void main(String[] args) {
         System.out.println("Logs from your program will appear here!");
@@ -47,22 +49,23 @@ public class Main {
                 output.write("*1\r\n$4\r\nPING\r\n".getBytes());
                 output.flush();
                 reader.readLine();
-                System.out.println(reader);
+//                System.out.println(reader);
+
                 output.write(("*3\r\n$8\r\nREPLCONF\r\n$14\r\nlistening-port\r\n$4\r\n"+String.valueOf(port)+"\r\n").getBytes());
                 output.flush();
                 reader.readLine();
-                System.out.println(reader);
+//                System.out.println(reader);
 
                 output.write("*3\r\n$8\r\nREPLCONF\r\n$4\r\ncapa\r\n$6\r\npsync2\r\n".getBytes());
                 output.flush();
                 reader.readLine();
-                System.out.println(reader);
+//                System.out.println(reader);
 
                 output.write("*3\r\n$5\r\nPSYNC\r\n$1\r\n?\r\n$2\r\n-1\r\n".getBytes());
                 output.flush();
                 reader.readLine();
-                System.out.println(reader);
-
+//                System.out.println(reader);
+                reader.readLine();
 
             }
             catch(IOException e) {
@@ -227,7 +230,12 @@ public class Main {
                 output.write("+OK\r\n".getBytes());
                 break;
             case "PSYNC":
+                Base64.Decoder decoder = Base64.getDecoder();
+                byte[] decodedBytes = decoder.decode(RDBfile);
                 output.write(("+FULLRESYNC "+mastersReplID+" 0\r\n").getBytes());
+                output.flush();
+                output.write(("$"+decodedBytes.length+"\r\n").getBytes());
+                output.write(decodedBytes);
                 break;
             default:
                 output.write("-ERR unknown command\r\n".getBytes());
