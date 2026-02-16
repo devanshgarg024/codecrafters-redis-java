@@ -151,7 +151,7 @@ public class Main {
 
                     case "INFO":
                         String infoContent = "role:" + role + "\r\n" +
-                                "master_replid:8371b4fb1155b71f4a04d3e1bc3e18c4a990aeeb\r\n" +
+                                mastersReplID+"\r\n" +
                                 "master_repl_offset:0";
                         System.out.println("dsf");
                         output.write(("$" + infoContent.length() + "\r\n" + infoContent+"\r\n").getBytes());
