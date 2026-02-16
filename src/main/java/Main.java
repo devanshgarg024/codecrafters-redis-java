@@ -26,18 +26,33 @@ public class Main {
     public static void main(String[] args) {
         System.out.println("Logs from your program will appear here!");
         int port=6379;
-            if(args.length>=1&&args[0].equals("--port")){
-                port=Integer.parseInt(args[1]);
+        String masterHost=null;
+        int masterPort=0;
+
+        if(args.length>=1&&args[0].equals("--port")){
+            port=Integer.parseInt(args[1]);
+        }
+        if(args.length>=3&&args[2].equals("--replicaof")){
+            role="slave";
+            masterHost=args[3];
+//            System.out.println(masterHost);
+//            System.out.println(masterPort);
+//            masterPort=Integer.parseInt(args[4]);
+
+        }
+        if(!role.equals("master")){
+            try(Socket slaveSocket=new Socket("localhost",6379)){
+            OutputStream output = slaveSocket.getOutputStream();
+            output.write("*1\r\n$4\r\nPING\r\n".getBytes());
             }
-            if(args.length>=3&&args[2].equals("--replicaof"))role="slave";
-
-        // FIX: Create the executor OUTSIDE the try-with-resources block
+            catch(IOException e) {
+                System.out.println("Could not connect to master: " + e.getMessage());
+            }
+        }
         ExecutorService executor = Executors.newCachedThreadPool();
-
         try (ServerSocket serverSocket = new ServerSocket(port)) {
             serverSocket.setReuseAddress(true);
             System.out.println("Redis server started on port " + port);
-
             // Wait for connection from client.
             while (true) {
                 Socket clientSocket = serverSocket.accept();
