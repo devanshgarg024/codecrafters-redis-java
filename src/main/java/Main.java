@@ -281,7 +281,7 @@ public class Main {
                 if(shouldReturn)output.write(response.getBytes());
                 break;
             case "REPLCONF":
-                output.write("+OK\r\n".getBytes());
+                output.write(slaveConnectionAndAck.replconf(words).getBytes());
                 break;
             case "PSYNC":
                 Base64.Decoder decoder = Base64.getDecoder();
