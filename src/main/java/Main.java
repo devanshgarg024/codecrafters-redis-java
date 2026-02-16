@@ -121,28 +121,16 @@ public class Main {
             boolean ishold=false;
             while(true){
                 Vector<String> words = new Vector<>();
-                String breakline="\r\n";
                 String begin=reader.readLine();
                 if (begin == null) break;
                 if(begin.startsWith("*")){
                     int num=Integer.parseInt(begin.substring(1));
-                begin=begin.concat(breakline);
                     for(int i=0;i<num;i++){
-                        String a=reader.readLine();
-                        String b=reader.readLine();
-                        begin=begin.concat(a);
-                        begin=begin.concat(breakline);
-                        begin=begin.concat(b);
-                        begin=begin.concat(breakline);
-                        words.add(a) ;
-                        words.add(b);
+                        words.add(reader.readLine()) ;
+                        words.add(reader.readLine());
                     }
                 }
-                if(role.equals("master")){
-                    for(Socket slaveSocket: AllSlaveSockets){
-                        slaveSocket.getOutputStream().write(begin.getBytes());
-                    }
-                }
+
                 switch (words.get(1).toUpperCase()) {
                     case "MULTI":
                         ishold = true;
@@ -217,15 +205,18 @@ public class Main {
                 output.write((words.get(2)+"\r\n"+words.get(3)+"\r\n").getBytes());
                 break;
             case "SET":
+                sendToSlaves(words);
                 output.write(getSetCommand.set(words).getBytes());
                 break;
             case "GET":
                 output.write(getSetCommand.get(words).getBytes());
                 break;
             case "RPUSH":
+                sendToSlaves(words);
                 output.write(pushRangeCommand.rpush(words).getBytes());
                 break;
             case "LPUSH":
+                sendToSlaves(words);
                 output.write(pushRangeCommand.lpush(words).getBytes());
                 break;
             case "LRANGE":
@@ -235,15 +226,18 @@ public class Main {
                 output.write(pushRangeCommand.llen(words).getBytes());
                 break;
             case "LPOP":
+                sendToSlaves(words);
                 output.write(popCommand.lpop(words).getBytes());
                 break;
             case "BLPOP":
+                sendToSlaves(words);
                 output.write(popCommand.blpop(words,clientSocket).getBytes());
                 break;
             case "TYPE":
                 output.write(typeCommand.type(words).getBytes());
                 break;
             case "XADD":
+                sendToSlaves(words);
                 output.write(streamCommand.xadd(words).getBytes());
                 break;
             case "XRANGE":
@@ -253,6 +247,7 @@ public class Main {
                 output.write(streamCommand.xread(words).getBytes());
                 break;
             case "INCR":
+                sendToSlaves(words);
                 output.write(OperationCommand.incr(words).getBytes());
                 break;
             case "REPLCONF":
@@ -275,5 +270,24 @@ public class Main {
          } catch (IOException e) {
                 System.out.println("Error handling Client: " + e.getMessage());
             }
+    }
+    public static void sendToSlaves(Vector<String > words){
+            String cmd="*";
+            cmd+=words.size()/2;
+            cmd+="\r\n";
+            for(int i=0;i<words.size();i++){
+                cmd+= words.get(i);
+                cmd+="\r\n";
+            }
+        try{
+        if(role.equals("master")){
+            for(Socket slaveSocket: AllSlaveSockets){
+                slaveSocket.getOutputStream().write(cmd.getBytes());
+            }
+        }
+        } catch(IOException e) {
+                System.out.println("Error handling Client: " + e.getMessage());
+            }
+
     }
 }
