@@ -1,3 +1,4 @@
+import javax.swing.plaf.synth.SynthLookAndFeel;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -23,10 +24,11 @@ public class Main {
     public static String mastersReplID="?";
     public static int offset=-1;
     public static String RDBfile="UkVESVMwMDEx+glyZWRpcy12ZXIFNy4yLjD6CnJlZGlzLWJpdHPAQPoFY3RpbWXCbQi8ZfoIdXNlZC1tZW3CsMQQAPoIYW9mLWJhc2XAAP/wbjv+wP9aog==";
+    public static int port=6379;
+    public static List<Socket> AllSlaveSockets=new ArrayList<>();
 
-    static void main(String[] args) {
+    public static void main(String[] args) {
         System.out.println("Logs from your program will appear here!");
-        int port=6379;
         String masterHost=null;
         int masterPort=0;
 
@@ -43,29 +45,11 @@ public class Main {
         }
         ExecutorService executor = Executors.newCachedThreadPool();
         if(!role.equals("master")){
-            try(Socket slaveSocket=new Socket("localhost",6379)){
-            BufferedReader reader = new BufferedReader(new InputStreamReader(slaveSocket.getInputStream()));
-            OutputStream output=slaveSocket.getOutputStream();
-                output.write("*1\r\n$4\r\nPING\r\n".getBytes());
-                output.flush();
-                reader.readLine();
-//                System.out.println(reader);
-
-                output.write(("*3\r\n$8\r\nREPLCONF\r\n$14\r\nlistening-port\r\n$4\r\n"+String.valueOf(port)+"\r\n").getBytes());
-                output.flush();
-                reader.readLine();
-//                System.out.println(reader);
-
-                output.write("*3\r\n$8\r\nREPLCONF\r\n$4\r\ncapa\r\n$6\r\npsync2\r\n".getBytes());
-                output.flush();
-                reader.readLine();
-//                System.out.println(reader);
-
-                output.write("*3\r\n$5\r\nPSYNC\r\n$1\r\n?\r\n$2\r\n-1\r\n".getBytes());
-                output.flush();
-                reader.readLine();
-//                System.out.println(reader);
-                reader.readLine();
+            try{
+                Socket masterSocket=new Socket("localhost",6379);
+                executor.submit(() -> {
+                    handleMasterRequests(masterSocket);
+                });
 
             }
             catch(IOException e) {
@@ -80,6 +64,7 @@ public class Main {
                     .map(Object::toString)
                     .collect(Collectors.joining());
         }
+
         try (ServerSocket serverSocket = new ServerSocket(port)) {
             serverSocket.setReuseAddress(true);
             System.out.println("Redis server started on port " + port);
@@ -95,6 +80,38 @@ public class Main {
         }
     }
 
+    private static void handleMasterRequests(Socket masterSocket){
+        try{
+        BufferedReader reader = new BufferedReader(new InputStreamReader(masterSocket.getInputStream()));
+        OutputStream output=masterSocket.getOutputStream();
+        output.write("*1\r\n$4\r\nPING\r\n".getBytes());
+        output.flush();
+        reader.readLine();
+
+        output.write(("*3\r\n$8\r\nREPLCONF\r\n$14\r\nlistening-port\r\n$4\r\n"+String.valueOf(port)+"\r\n").getBytes());
+        output.flush();
+        reader.readLine();
+
+        output.write("*3\r\n$8\r\nREPLCONF\r\n$4\r\ncapa\r\n$6\r\npsync2\r\n".getBytes());
+        output.flush();
+        reader.readLine();
+
+        output.write("*3\r\n$5\r\nPSYNC\r\n$1\r\n?\r\n$2\r\n-1\r\n".getBytes());
+
+        output.flush();
+        reader.readLine();
+
+        reader.readLine();
+
+        while(true){
+            String cmd=reader.readLine();
+        }
+        } catch (IOException e) {
+        System.out.println("IOException: " + e.getMessage());
+        }
+
+    }
+
     private static void handleRequest(Socket clientSocket) {
         try (clientSocket) {
             System.out.println("Processing on: " + Thread.currentThread());
@@ -104,13 +121,26 @@ public class Main {
             boolean ishold=false;
             while(true){
                 Vector<String> words = new Vector<>();
+                String breakline="\r\n";
                 String begin=reader.readLine();
                 if (begin == null) break;
                 if(begin.startsWith("*")){
                     int num=Integer.parseInt(begin.substring(1));
+                begin=begin.concat(breakline);
                     for(int i=0;i<num;i++){
-                        words.add(reader.readLine()) ;
-                        words.add(reader.readLine());
+                        String a=reader.readLine();
+                        String b=reader.readLine();
+                        begin=begin.concat(a);
+                        begin=begin.concat(breakline);
+                        begin=begin.concat(b);
+                        begin=begin.concat(breakline);
+                        words.add(a) ;
+                        words.add(b);
+                    }
+                }
+                if(role.equals("master")){
+                    for(Socket slaveSocket: AllSlaveSockets){
+                        slaveSocket.getOutputStream().write(begin.getBytes());
                     }
                 }
                 switch (words.get(1).toUpperCase()) {
@@ -169,7 +199,6 @@ public class Main {
                         output.flush();
                         break;
                 }
-
             }
 
         } catch (IOException e) {
@@ -236,6 +265,7 @@ public class Main {
                 output.flush();
                 output.write(("$"+decodedBytes.length+"\r\n").getBytes());
                 output.write(decodedBytes);
+                AllSlaveSockets.add(clientSocket);
                 break;
             default:
                 output.write("-ERR unknown command\r\n".getBytes());
