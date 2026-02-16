@@ -82,7 +82,7 @@ public class Main {
 
     private static void handleMasterRequests(Socket masterSocket){
         try{
-        BufferedReader reader = new BufferedReader(new InputStreamReader(masterSocket.getInputStream()));
+            BufferedReader reader = new BufferedReader(new InputStreamReader(masterSocket.getInputStream(), java.nio.charset.StandardCharsets.ISO_8859_1));
         OutputStream output=masterSocket.getOutputStream();
         output.write("*1\r\n$4\r\nPING\r\n".getBytes());
         output.flush();
@@ -101,10 +101,32 @@ public class Main {
         output.flush();
         reader.readLine();
 
-        reader.readLine();
+
+            String rdbSizeLine = reader.readLine(); // $88
+            if (rdbSizeLine != null && rdbSizeLine.startsWith("$")) {
+                int length = Integer.parseInt(rdbSizeLine.substring(1));
+                char[] buffer = new char[length];
+                int totalRead = 0;
+                while (totalRead < length) {
+                    int read = reader.read(buffer, totalRead, length - totalRead);
+                    if (read == -1) break;
+                    totalRead += read;
+                }
+            }
+
 
         while(true){
-            String cmd=reader.readLine();
+            Vector<String> words = new Vector<>();
+            String begin=reader.readLine();
+            if (begin == null) break;
+            if(begin.startsWith("*")){
+                int num=Integer.parseInt(begin.substring(1));
+                for(int i=0;i<num;i++){
+                    words.add(reader.readLine()) ;
+                    words.add(reader.readLine());
+                }
+            }
+            executeCommand(words,output,masterSocket,false);
         }
         } catch (IOException e) {
         System.out.println("IOException: " + e.getMessage());
@@ -150,7 +172,7 @@ public class Main {
                             output.flush();
 
                             while (!queue.isEmpty()) {
-                                executeCommand(queue.remove(), output, clientSocket);
+                                executeCommand(queue.remove(), output, clientSocket,true);
                                 output.flush();
                             }
                         }
@@ -183,7 +205,7 @@ public class Main {
                             output.write("+QUEUED\r\n".getBytes());
                             break;
                         }
-                        executeCommand(words, output, clientSocket);
+                        executeCommand(words, output, clientSocket,true);
                         output.flush();
                         break;
                 }
@@ -194,8 +216,9 @@ public class Main {
         }
         // Do heavy I/O here (Database, API calls, etc.)
     }
-    public static void executeCommand(Vector<String> words,OutputStream output, Socket clientSocket){
+    public static void executeCommand(Vector<String> words,OutputStream output, Socket clientSocket,boolean shouldReturn){
         try{
+            String response;
 
             switch(words.get(1).toUpperCase()){
             case "PING":
@@ -206,18 +229,21 @@ public class Main {
                 break;
             case "SET":
                 sendToSlaves(words);
-                output.write(getSetCommand.set(words).getBytes());
+                response=getSetCommand.set(words);
+                if(shouldReturn)output.write(response.getBytes());
                 break;
             case "GET":
                 output.write(getSetCommand.get(words).getBytes());
                 break;
             case "RPUSH":
                 sendToSlaves(words);
-                output.write(pushRangeCommand.rpush(words).getBytes());
+                response=pushRangeCommand.rpush(words);
+                if(shouldReturn)output.write(response.getBytes());
                 break;
             case "LPUSH":
                 sendToSlaves(words);
-                output.write(pushRangeCommand.lpush(words).getBytes());
+                response=pushRangeCommand.lpush(words);
+                if(shouldReturn)output.write(response.getBytes());
                 break;
             case "LRANGE":
                 output.write(pushRangeCommand.lrange(words).getBytes());
@@ -227,18 +253,21 @@ public class Main {
                 break;
             case "LPOP":
                 sendToSlaves(words);
-                output.write(popCommand.lpop(words).getBytes());
+                response=popCommand.lpop(words);
+                if(shouldReturn)output.write(response.getBytes());
                 break;
             case "BLPOP":
                 sendToSlaves(words);
-                output.write(popCommand.blpop(words,clientSocket).getBytes());
+                response=popCommand.blpop(words,clientSocket);
+                if(shouldReturn)output.write(response.getBytes());
                 break;
             case "TYPE":
                 output.write(typeCommand.type(words).getBytes());
                 break;
             case "XADD":
                 sendToSlaves(words);
-                output.write(streamCommand.xadd(words).getBytes());
+                response=streamCommand.xadd(words);
+                if(shouldReturn)output.write(response.getBytes());
                 break;
             case "XRANGE":
                 output.write(streamCommand.xrange(words).getBytes());
@@ -248,7 +277,8 @@ public class Main {
                 break;
             case "INCR":
                 sendToSlaves(words);
-                output.write(OperationCommand.incr(words).getBytes());
+                response=OperationCommand.incr(words);
+                if(shouldReturn)output.write(response.getBytes());
                 break;
             case "REPLCONF":
                 output.write("+OK\r\n".getBytes());
