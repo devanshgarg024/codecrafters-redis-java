@@ -100,7 +100,9 @@ public class Main {
                 continue;
             }
             if(words.get(1).equals("INFO")){
-                output.write(("$"+(role.length()+5)+"\r\nrole:"+role+"\r\n").getBytes());
+                output.write(("$"+(role.length()+5+40+5+31)+"\r\nrole:"+role+"\n").getBytes());
+                output.write(("master_replid:8371b4fb1155b71f4a04d3e1bc3e18c4a990aeeb\n").getBytes());
+                output.write(("master_repl_offset:0\r\n").getBytes());
             }
 
             if(ishold){
