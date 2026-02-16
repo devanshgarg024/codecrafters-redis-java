@@ -151,11 +151,9 @@ public class Main {
 
                     case "INFO":
                         String infoContent = "role:" + role + "\r\n" +
-                                mastersReplID+"\r\n" +
+                                "master_replid:"+mastersReplID+"\r\n" +
                                 "master_repl_offset:0";
-                        System.out.println("dsf");
                         output.write(("$" + infoContent.length() + "\r\n" + infoContent+"\r\n").getBytes());
-                        System.out.println("dsf");
                         output.flush();
                         break;
                     default:
@@ -229,7 +227,7 @@ public class Main {
                 output.write("+OK\r\n".getBytes());
                 break;
             case "PSYNC":
-                output.write(("+FULLRESYNC"+mastersReplID+"0\r\n").getBytes());
+                output.write(("+FULLRESYNC "+mastersReplID+" 0\r\n").getBytes());
                 break;
             default:
                 output.write("-ERR unknown command\r\n".getBytes());
