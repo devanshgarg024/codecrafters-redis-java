@@ -10,7 +10,7 @@ public class slaveConnectionAndAck {
             return "+OK\r\n";
         }
         else if(words.get(3).toLowerCase().equals("getack")){
-            response=("*3\r\n$8\r\nREPLCONF\r\n$3\r\nACK\r\n$1\r\n0\r\n");
+            response=("*3\r\n$8\r\nREPLCONF\r\n$3\r\nACK\r\n$"+String.valueOf(Main.offset).length()+"\r\n"+Main.offset+"\r\n");
         }
         return response;
     }

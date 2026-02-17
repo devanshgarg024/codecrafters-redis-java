@@ -100,6 +100,7 @@ public class Main {
 
         output.flush();
         reader.readLine();
+        offset=0;
 
 
             String rdbSizeLine = reader.readLine(); // $88
@@ -127,6 +128,14 @@ public class Main {
                 }
             }
             executeCommand(words,output,masterSocket,false);
+            int calcoffset=1;
+            calcoffset+=String.valueOf(words.size()/2).length();
+            calcoffset+=2;
+            for(String temp:words){
+                calcoffset+=temp.length();
+                calcoffset+=2;
+            }
+            offset+=calcoffset;
         }
         } catch (IOException e) {
         System.out.println("IOException: " + e.getMessage());
@@ -222,10 +231,12 @@ public class Main {
 
             switch(words.get(1).toUpperCase()){
             case "PING":
-                output.write("+PONG\r\n".getBytes());
+                response="+PONG\r\n";
+                if(shouldReturn)output.write(response.getBytes());
                 break;
             case "ECHO":
-                output.write((words.get(2)+"\r\n"+words.get(3)+"\r\n").getBytes());
+                response=(words.get(2)+"\r\n"+words.get(3)+"\r\n");
+                if(shouldReturn)output.write(response.getBytes());
                 break;
             case "SET":
                 sendToSlaves(words);
@@ -233,7 +244,8 @@ public class Main {
                 if(shouldReturn)output.write(response.getBytes());
                 break;
             case "GET":
-                output.write(getSetCommand.get(words).getBytes());
+                response=getSetCommand.get(words);
+                if(shouldReturn)output.write(response.getBytes());
                 break;
             case "RPUSH":
                 sendToSlaves(words);
@@ -246,10 +258,12 @@ public class Main {
                 if(shouldReturn)output.write(response.getBytes());
                 break;
             case "LRANGE":
-                output.write(pushRangeCommand.lrange(words).getBytes());
+                response=pushRangeCommand.lrange(words);
+                if(shouldReturn)output.write(response.getBytes());
                 break;
             case "LLEN":
-                output.write(pushRangeCommand.llen(words).getBytes());
+                response=pushRangeCommand.llen(words);
+                if(shouldReturn)output.write(response.getBytes());
                 break;
             case "LPOP":
                 sendToSlaves(words);
@@ -262,7 +276,8 @@ public class Main {
                 if(shouldReturn)output.write(response.getBytes());
                 break;
             case "TYPE":
-                output.write(typeCommand.type(words).getBytes());
+                response=typeCommand.type(words);
+                if(shouldReturn)output.write(response.getBytes());
                 break;
             case "XADD":
                 sendToSlaves(words);
@@ -270,10 +285,12 @@ public class Main {
                 if(shouldReturn)output.write(response.getBytes());
                 break;
             case "XRANGE":
-                output.write(streamCommand.xrange(words).getBytes());
+                response=streamCommand.xrange(words);
+                if(shouldReturn)output.write(response.getBytes());
                 break;
             case "XREAD":
-                output.write(streamCommand.xread(words).getBytes());
+                response=streamCommand.xread(words);
+                if(shouldReturn)output.write(response.getBytes());
                 break;
             case "INCR":
                 sendToSlaves(words);
