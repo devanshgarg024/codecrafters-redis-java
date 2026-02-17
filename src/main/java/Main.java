@@ -15,6 +15,7 @@ import java.util.Base64;
 
 public class Main {
     public record user(Socket clientSocket, LocalTime startTime, LocalTime expTime,boolean willExp ){}
+    public record Slaves(Socket slaveSocket, int port, int offset){}
     public static Map<String, List<user>> PopExp=new HashMap<>();
     public static Map<String,String> db =new HashMap<>();
     public static Map<String,ArrayList<LinkedHashMap<String,String>>> streamdb =new HashMap<>();
@@ -309,6 +310,9 @@ public class Main {
                 output.write(decodedBytes);
                 AllSlaveSockets.add(clientSocket);
                 break;
+            case "WAIT":
+                output.write(slaveConnectionAndAck.wait(words).getBytes());
+                break;
             default:
                 output.write("-ERR unknown command\r\n".getBytes());
                 break;
@@ -318,23 +322,32 @@ public class Main {
                 System.out.println("Error handling Client: " + e.getMessage());
             }
     }
-    public static void sendToSlaves(Vector<String > words){
-            String cmd="*";
-            cmd+=words.size()/2;
-            cmd+="\r\n";
-            for(int i=0;i<words.size();i++){
-                cmd+= words.get(i);
-                cmd+="\r\n";
-            }
-        try{
-        if(role.equals("master")){
-            for(Socket slaveSocket: AllSlaveSockets){
-                slaveSocket.getOutputStream().write(cmd.getBytes());
+    public static void sendToSlaves(Vector<String > words) {
+        String cmd = "*";
+        cmd += words.size() / 2;
+        cmd += "\r\n";
+        for (int i = 0; i < words.size(); i++) {
+            cmd += words.get(i);
+            cmd += "\r\n";
+        }
+        if (role.equals("master")) {
+            synchronized (AllSlaveSockets) {
+                Iterator<Socket> iterator = AllSlaveSockets.iterator();
+                while (iterator.hasNext()) {
+                    Socket slave = iterator.next();
+                    try {
+                        slave.getOutputStream().write(cmd.getBytes());
+                        slave.getOutputStream().flush();
+                    } catch (IOException e) {
+                        System.out.println("Slave disconnected: " + slave.getRemoteSocketAddress());
+                        iterator.remove();
+                        try {
+                            slave.close();
+                        } catch (IOException ignored) {
+                        }
+                    }
+                }
             }
         }
-        } catch(IOException e) {
-                System.out.println("Error handling Client: " + e.getMessage());
-            }
-
     }
 }
