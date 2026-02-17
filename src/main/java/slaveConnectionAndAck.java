@@ -21,13 +21,16 @@ public class slaveConnectionAndAck {
         String response="";
         int NumOfSyncSlave=Integer.parseInt(words.get(3));
         int timeout=Integer.parseInt(words.get(5));
-//        synchronized (Main.AllSlaveSockets) {
-//            Iterator<Socket> iterator = Main.AllSlaveSockets.iterator();
-//            while (iterator.hasNext()) {
-//                Socket slave = iterator.next();
+        int num=0;
+        synchronized (Main.AllSlaveSockets) {
+            Iterator<Socket> iterator = Main.AllSlaveSockets.iterator();
+            while (iterator.hasNext()) {
+                Socket slave = iterator.next();
+                    num+=1;
 //                try {
 //
 //                    slave.getOutputStream().write(("*3\r\n$8\r\nREPLCONF\r\n$3\r\nACK\r\n$1\r\n*\r\n").getBytes());
+//
 //                    slave.getOutputStream().flush();
 //                } catch (IOException e) {
 //                    System.out.println("Slave disconnected: " + slave.getRemoteSocketAddress());
@@ -37,9 +40,9 @@ public class slaveConnectionAndAck {
 //                    } catch (IOException ignored) {
 //                    }
 //                }
-//            }
-//        }
-        response+=":0\r\n";
+            }
+        }
+        response+=":"+num+"\r\n";
         return response;
     }
 }
