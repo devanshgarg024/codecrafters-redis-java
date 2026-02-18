@@ -11,23 +11,15 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.time.LocalTime;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import java.security.SecureRandom;
 import java.util.Base64;
 
 public class Main {
-    public static class Slaves {
-        public int mastersOffset;
-        public int slaveOffset;
 
-        public Slaves(int mastersOffset, int slaveOffset) {
-            this.mastersOffset = mastersOffset;
-            this.slaveOffset = slaveOffset;
-        }
-    }
 
     public static final Object waitLock = new Object();
-    public static volatile CountDownLatch ackLatch = null;
     public record user(Socket clientSocket, LocalTime startTime, LocalTime expTime,boolean willExp ){}
     public static ConcurrentHashMap<String, List<user>> PopExp=new ConcurrentHashMap<>();
     public static ConcurrentHashMap<String,String> db =new ConcurrentHashMap<>();
@@ -36,10 +28,10 @@ public class Main {
     public static ConcurrentHashMap<String,List<String>> elementList =new ConcurrentHashMap<>();
     public static String role="master";
     public static String mastersReplID="?";
-    public static AtomicInteger offset=new AtomicInteger(-1);
+    public static AtomicLong offset=new AtomicLong(0);
     public static String RDBfile="UkVESVMwMDEx+glyZWRpcy12ZXIFNy4yLjD6CnJlZGlzLWJpdHPAQPoFY3RpbWXCbQi8ZfoIdXNlZC1tZW3CsMQQAPoIYW9mLWJhc2XAAP/wbjv+wP9aog==";
     public static int port=6379;
-    public static ConcurrentHashMap<Socket,Slaves> AllSlaveSockets=new ConcurrentHashMap<>();
+    public static ConcurrentHashMap<Socket, Long> AllSlaveSockets=new ConcurrentHashMap<>();
     public static String dir=null;
     public static String dbfilename=null;
     public static void main(String[] args) {
@@ -120,8 +112,9 @@ public class Main {
         output.write("*3\r\n$5\r\nPSYNC\r\n$1\r\n?\r\n$2\r\n-1\r\n".getBytes());
 
         output.flush();
-        reader.readLine();
-        offset.set(0);
+        String a=reader.readLine();
+        int temp=Integer.parseInt(a.substring(53));
+        offset.set(temp);
 
 
             String rdbSizeLine = reader.readLine(); // $88
@@ -158,7 +151,7 @@ public class Main {
                 cmdBuilder.append(w).append("\r\n");
             }
             calcoffset = cmdBuilder.toString().getBytes().length;
-            offset.addAndGet(calcoffset);
+           offset.addAndGet(calcoffset);
         }
         } catch (IOException e) {
         System.out.println("IOException: " + e.getMessage());
@@ -326,12 +319,12 @@ public class Main {
             case "PSYNC":
                 Base64.Decoder decoder = Base64.getDecoder();
                 byte[] decodedBytes = decoder.decode(RDBfile);
-                output.write(("+FULLRESYNC "+mastersReplID+" 0\r\n").getBytes());
+                output.write(("+FULLRESYNC "+mastersReplID+" "+offset.get()+"\r\n").getBytes());
                 output.flush();
                 output.write(("$"+decodedBytes.length+"\r\n").getBytes());
                 output.write(decodedBytes);
-                Slaves slave=new Slaves(0,0);
-                AllSlaveSockets.put(clientSocket,slave);
+                output.flush();
+                AllSlaveSockets.put(clientSocket, 0L);
                 break;
             case "WAIT":
                 response=slaveConnectionAndAck.wait(words);
@@ -354,7 +347,7 @@ public class Main {
                 System.out.println("Error handling Client: " + e.getMessage());
             }
     }
-    public static void sendToSlaves(ArrayList<String> words, boolean isReplicationTraffic) {
+    public static void sendToSlaves(ArrayList<String> words, boolean offChange) {
         StringBuilder cmdBuilder = new StringBuilder();
         cmdBuilder.append("*").append(words.size() / 2).append("\r\n");
         for (String word : words) {
@@ -364,13 +357,13 @@ public class Main {
         byte[] cmdBytes = cmd.getBytes(); // Get correct byte length
 
         if (role.equals("master")) {
-                Iterator<Map.Entry<Socket, Slaves>> iterator = AllSlaveSockets.entrySet().iterator();
+                        if(offChange)offset.addAndGet(cmdBytes.length);
+                Iterator<Map.Entry<Socket, Long>> iterator = AllSlaveSockets.entrySet().iterator();
                 while (iterator.hasNext()) {
-                    Map.Entry<Socket, Slaves> entry = iterator.next();
+                    Map.Entry<Socket, Long> entry = iterator.next();
                     try {
                         entry.getKey().getOutputStream().write(cmdBytes);
                         entry.getKey().getOutputStream().flush();
-                        if(isReplicationTraffic)entry.getValue().mastersOffset += cmdBytes.length;
                     } catch (IOException e) {
                         iterator.remove();
                     }

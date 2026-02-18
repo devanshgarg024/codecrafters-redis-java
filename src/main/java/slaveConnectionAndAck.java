@@ -22,9 +22,8 @@ public class slaveConnectionAndAck {
 
     private static void processAck(ArrayList<String> words, Socket clientSocket) {
         try {
-            int offrec = Integer.parseInt(words.get(5));
-            Main.Slaves slaveData = Main.AllSlaveSockets.get(clientSocket);
-            slaveData.slaveOffset = offrec;
+            long offrec = Long.parseLong(words.get(5));
+            Main.AllSlaveSockets.put(clientSocket,offrec);
             synchronized (Main.waitLock){
                 Main.waitLock.notifyAll();
             }
@@ -36,15 +35,16 @@ public class slaveConnectionAndAck {
     public static String wait(ArrayList<String> words) {
         int targetReplicas = Integer.parseInt(words.get(3));
         int timeout = Integer.parseInt(words.get(5));
-            ArrayList<String> getAckCmd = new ArrayList<>();
+
+        long requiredOffset = Main.offset.get();
+        long startTime = System.currentTimeMillis();
+            ArrayList<String> getAckCmd = new ArrayList<String>();
             getAckCmd.add("$8"); getAckCmd.add("REPLCONF");
             getAckCmd.add("$6"); getAckCmd.add("GETACK");
             getAckCmd.add("$1"); getAckCmd.add("*");
-            Main.sendToSlaves(getAckCmd,false);
-
-        long startTime = System.currentTimeMillis();
         synchronized (Main.waitLock) {
-            long syncedCount = countSyncedSlaves();
+            Main.sendToSlaves(getAckCmd,false);
+            long syncedCount = countSyncedSlaves(requiredOffset);
             while (syncedCount < targetReplicas) {
                 long now = System.currentTimeMillis();
                 long elapsed = now - startTime;
@@ -60,16 +60,16 @@ public class slaveConnectionAndAck {
                     Thread.currentThread().interrupt();
                     break;
                 }
-                syncedCount = countSyncedSlaves();
+                syncedCount = countSyncedSlaves(requiredOffset);
             }
             return ":" + syncedCount + "\r\n";
         }
     }
 
-    private static long countSyncedSlaves() {
+    private static long countSyncedSlaves(long requiredOffset) {
         int count = 0;
-        for (Main.Slaves slave : Main.AllSlaveSockets.values()) {
-            if (slave.slaveOffset >= slave.mastersOffset) {
+        for (long slaveOff : Main.AllSlaveSockets.values()) {
+            if (slaveOff >= requiredOffset) {
                 count++;
             }
         }
