@@ -40,7 +40,8 @@ public class Main {
     public static String RDBfile="UkVESVMwMDEx+glyZWRpcy12ZXIFNy4yLjD6CnJlZGlzLWJpdHPAQPoFY3RpbWXCbQi8ZfoIdXNlZC1tZW3CsMQQAPoIYW9mLWJhc2XAAP/wbjv+wP9aog==";
     public static int port=6379;
     public static ConcurrentHashMap<Socket,Slaves> AllSlaveSockets=new ConcurrentHashMap<>();
-
+    public static String dir=null;
+    public static String dbfilename=null;
     public static void main(String[] args) {
         System.out.println("Logs from your program will appear here!");
         String masterHost=null;
@@ -56,6 +57,12 @@ public class Main {
 
 //            System.out.println(masterHost);
 //            System.out.println(masterPort);
+        }
+        if(args.length>=2&&args[0].equals("--dir")){
+            dir=args[1];
+        }
+        if(args.length>=4&&args[2].equals("--dir")){
+            dbfilename=args[3];
         }
         ExecutorService executor = Executors.newCachedThreadPool();
         if(!role.equals("master")){
@@ -329,9 +336,15 @@ public class Main {
             case "WAIT":
                 response=slaveConnectionAndAck.wait(words);
                 output.write(response.getBytes());
-//                printSlaveOffset();
-
                 break;
+                case "CONFIG":
+                    if(words.get(5).equals("dir")){
+                        output.write(("*2\r\n$3\r\ndir\r\n$"+dir.length()+"\r\n"+dir+"\r\n").getBytes());
+                    }
+                    else{
+                        output.write(("*2\r\n$3\r\ndbfilename\r\n$"+dbfilename.length()+"\r\n"+dbfilename+"\r\n").getBytes());
+                    }
+                    break;
             default:
                 output.write("-ERR unknown command\r\n".getBytes());
                 break;
