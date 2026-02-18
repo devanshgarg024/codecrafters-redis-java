@@ -1,8 +1,8 @@
-import java.util.Vector;
+import java.util.ArrayList;
 
 public class OperationCommand {
 
-    public static String incr(Vector<String> words) {
+    public static String incr(ArrayList<String> words) {
         String response="";
         String key=words.get(3);
         if(!Main.db.containsKey(key)){

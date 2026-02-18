@@ -2,7 +2,7 @@ import java.sql.Array;
 import java.util.*;
 
 public class streamCommand {
-    public static String xadd(Vector<String> words) {
+    public static String xadd(ArrayList<String> words) {
         String response = "";
         String key = words.get(3);
         if (!Main.streamdb.containsKey(key)) {
@@ -113,7 +113,7 @@ public class streamCommand {
         return response;
 
         }
-    public static String xrange(Vector<String> words) {
+    public static String xrange(ArrayList<String> words) {
         String key = words.get(3);
         String st = words.get(5);
         String en = words.get(7);
@@ -183,7 +183,7 @@ public class streamCommand {
 
         return response.toString();
     }
-    public static String xread(Vector<String> words) {
+    public static String xread(ArrayList<String> words) {
         String response="";
 
         if(words.get(3).toUpperCase().equals("BLOCK")){
@@ -213,7 +213,7 @@ public class streamCommand {
                 st=parts[0]+"-"+seq;
             }
             response+=("$"+String.valueOf(key.length())+"\r\n"+key+"\r\n");
-            Vector<String> v=new Vector<>();
+            ArrayList<String> v=new ArrayList<>();
             v.add("XRANGE");
             v.add("XRANGE");
             v.add("XRANGE");
@@ -242,7 +242,7 @@ public class streamCommand {
 
                 }
 
-            v=new Vector<>();
+            v=new ArrayList<>();
             v.add("XRANGE");
             v.add("XRANGE");
             v.add("XRANGE");
@@ -278,7 +278,7 @@ public class streamCommand {
             }
 
             response+=("$"+String.valueOf(key.length())+"\r\n"+key+"\r\n");
-            Vector<String> temp=new Vector<>();
+            ArrayList<String> temp=new ArrayList<>();
             temp.add("XRANGE");
             temp.add("XRANGE");
             temp.add("XRANGE");

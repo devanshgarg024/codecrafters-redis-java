@@ -2,14 +2,14 @@ import java.net.Socket;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Vector;
+import java.util.ArrayList;
 import java.time.temporal.ChronoUnit;
 
 import static java.lang.Math.min;
 
 public class popCommand {
 
-    public static String lpop(Vector<String> words){
+    public static String lpop(ArrayList<String> words){
         String response="";
 
         if(words.size()==4){
@@ -41,7 +41,7 @@ public class popCommand {
         }
         return response;
     }
-    public static String blpop(Vector<String> words, Socket clientSocket){
+    public static String blpop(ArrayList<String> words, Socket clientSocket){
         LocalTime now = LocalTime.now();
         String response="";
         String key3=words.get(3);

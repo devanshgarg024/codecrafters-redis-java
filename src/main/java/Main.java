@@ -1,4 +1,3 @@
-import javax.swing.plaf.synth.SynthLookAndFeel;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -6,27 +5,41 @@ import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.time.LocalTime;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.security.SecureRandom;
 import java.util.Base64;
 
 public class Main {
+    public static class Slaves {
+        public int mastersOffset;
+        public int slaveOffset;
+
+        public Slaves(int mastersOffset, int slaveOffset) {
+            this.mastersOffset = mastersOffset;
+            this.slaveOffset = slaveOffset;
+        }
+    }
+
+    public static final Object waitLock = new Object();
+    public static volatile CountDownLatch ackLatch = null;
     public record user(Socket clientSocket, LocalTime startTime, LocalTime expTime,boolean willExp ){}
-    public record Slaves(Socket slaveSocket, int port, int offset){}
-    public static Map<String, List<user>> PopExp=new HashMap<>();
-    public static Map<String,String> db =new HashMap<>();
-    public static Map<String,ArrayList<LinkedHashMap<String,String>>> streamdb =new HashMap<>();
-    public static Map<String,LocalTime> exp =new HashMap<>();
-    public static Map<String,List<String>> elementList =new HashMap<>();
+    public static ConcurrentHashMap<String, List<user>> PopExp=new ConcurrentHashMap<>();
+    public static ConcurrentHashMap<String,String> db =new ConcurrentHashMap<>();
+    public static ConcurrentHashMap<String,ArrayList<LinkedHashMap<String,String>>> streamdb =new ConcurrentHashMap<>();
+    public static ConcurrentHashMap<String,LocalTime> exp =new ConcurrentHashMap<>();
+    public static ConcurrentHashMap<String,List<String>> elementList =new ConcurrentHashMap<>();
     public static String role="master";
     public static String mastersReplID="?";
-    public static int offset=-1;
+    public static AtomicInteger offset=new AtomicInteger(-1);
     public static String RDBfile="UkVESVMwMDEx+glyZWRpcy12ZXIFNy4yLjD6CnJlZGlzLWJpdHPAQPoFY3RpbWXCbQi8ZfoIdXNlZC1tZW3CsMQQAPoIYW9mLWJhc2XAAP/wbjv+wP9aog==";
     public static int port=6379;
-    public static List<Socket> AllSlaveSockets=new ArrayList<>();
+    public static ConcurrentHashMap<Socket,Slaves> AllSlaveSockets=new ConcurrentHashMap<>();
 
     public static void main(String[] args) {
         System.out.println("Logs from your program will appear here!");
@@ -89,7 +102,7 @@ public class Main {
         output.flush();
         reader.readLine();
 
-        output.write(("*3\r\n$8\r\nREPLCONF\r\n$14\r\nlistening-port\r\n$4\r\n"+String.valueOf(port)+"\r\n").getBytes());
+        output.write(("*3\r\n$8\r\nREPLCONF\r\n$14\r\nlistening-port\r\n$"+String .valueOf(port).length()+"\r\n"+port+"\r\n").getBytes());
         output.flush();
         reader.readLine();
 
@@ -101,7 +114,7 @@ public class Main {
 
         output.flush();
         reader.readLine();
-        offset=0;
+        offset.set(0);
 
 
             String rdbSizeLine = reader.readLine(); // $88
@@ -118,7 +131,7 @@ public class Main {
 
 
         while(true){
-            Vector<String> words = new Vector<>();
+            ArrayList<String> words = new ArrayList<>();
             String begin=reader.readLine();
             if (begin == null) break;
             if(begin.startsWith("*")){
@@ -128,15 +141,17 @@ public class Main {
                     words.add(reader.readLine());
                 }
             }
+            else continue;
+
             executeCommand(words,output,masterSocket,false);
-            int calcoffset=1;
-            calcoffset+=String.valueOf(words.size()/2).length();
-            calcoffset+=2;
-            for(String temp:words){
-                calcoffset+=temp.length();
-                calcoffset+=2;
+            int calcoffset = 0;
+            StringBuilder cmdBuilder = new StringBuilder();
+            cmdBuilder.append("*").append(words.size()/2).append("\r\n");
+            for(String w : words) {
+                cmdBuilder.append(w).append("\r\n");
             }
-            offset+=calcoffset;
+            calcoffset = cmdBuilder.toString().getBytes().length;
+            offset.addAndGet(calcoffset);
         }
         } catch (IOException e) {
         System.out.println("IOException: " + e.getMessage());
@@ -149,10 +164,10 @@ public class Main {
             System.out.println("Processing on: " + Thread.currentThread());
             BufferedReader reader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
             OutputStream output = clientSocket.getOutputStream();
-            Queue<Vector<String>> queue = new LinkedList<>();
+            Queue<ArrayList<String>> queue = new LinkedList<>();
             boolean ishold=false;
             while(true){
-                Vector<String> words = new Vector<>();
+                ArrayList<String> words = new ArrayList<>();
                 String begin=reader.readLine();
                 if (begin == null) break;
                 if(begin.startsWith("*")){
@@ -161,8 +176,8 @@ public class Main {
                         words.add(reader.readLine()) ;
                         words.add(reader.readLine());
                     }
-                }
-
+                } else continue;
+                if(words.isEmpty())continue;
                 switch (words.get(1).toUpperCase()) {
                     case "MULTI":
                         ishold = true;
@@ -226,21 +241,20 @@ public class Main {
         }
         // Do heavy I/O here (Database, API calls, etc.)
     }
-    public static void executeCommand(Vector<String> words,OutputStream output, Socket clientSocket,boolean shouldReturn){
+    public static void executeCommand(ArrayList<String> words,OutputStream output, Socket clientSocket,boolean shouldReturn){
         try{
             String response;
 
             switch(words.get(1).toUpperCase()){
             case "PING":
-                response="+PONG\r\n";
-                if(shouldReturn)output.write(response.getBytes());
+                if(shouldReturn)output.write("+PONG\r\n".getBytes());
                 break;
             case "ECHO":
                 response=(words.get(2)+"\r\n"+words.get(3)+"\r\n");
                 if(shouldReturn)output.write(response.getBytes());
                 break;
             case "SET":
-                sendToSlaves(words);
+                sendToSlaves(words,true);
                 response=getSetCommand.set(words);
                 if(shouldReturn)output.write(response.getBytes());
                 break;
@@ -249,12 +263,12 @@ public class Main {
                 if(shouldReturn)output.write(response.getBytes());
                 break;
             case "RPUSH":
-                sendToSlaves(words);
+                sendToSlaves(words,true);
                 response=pushRangeCommand.rpush(words);
                 if(shouldReturn)output.write(response.getBytes());
                 break;
             case "LPUSH":
-                sendToSlaves(words);
+                sendToSlaves(words,true);
                 response=pushRangeCommand.lpush(words);
                 if(shouldReturn)output.write(response.getBytes());
                 break;
@@ -267,12 +281,12 @@ public class Main {
                 if(shouldReturn)output.write(response.getBytes());
                 break;
             case "LPOP":
-                sendToSlaves(words);
+                sendToSlaves(words,true);
                 response=popCommand.lpop(words);
                 if(shouldReturn)output.write(response.getBytes());
                 break;
             case "BLPOP":
-                sendToSlaves(words);
+                sendToSlaves(words,true);
                 response=popCommand.blpop(words,clientSocket);
                 if(shouldReturn)output.write(response.getBytes());
                 break;
@@ -281,7 +295,7 @@ public class Main {
                 if(shouldReturn)output.write(response.getBytes());
                 break;
             case "XADD":
-                sendToSlaves(words);
+                sendToSlaves(words,true);
                 response=streamCommand.xadd(words);
                 if(shouldReturn)output.write(response.getBytes());
                 break;
@@ -294,12 +308,13 @@ public class Main {
                 if(shouldReturn)output.write(response.getBytes());
                 break;
             case "INCR":
-                sendToSlaves(words);
+                sendToSlaves(words,true);
                 response=OperationCommand.incr(words);
                 if(shouldReturn)output.write(response.getBytes());
                 break;
             case "REPLCONF":
-                output.write(slaveConnectionAndAck.replconf(words).getBytes());
+                response=slaveConnectionAndAck.replconf(words,clientSocket);
+                if(!response.isEmpty())output.write(response.getBytes());
                 break;
             case "PSYNC":
                 Base64.Decoder decoder = Base64.getDecoder();
@@ -308,10 +323,14 @@ public class Main {
                 output.flush();
                 output.write(("$"+decodedBytes.length+"\r\n").getBytes());
                 output.write(decodedBytes);
-                AllSlaveSockets.add(clientSocket);
+                Slaves slave=new Slaves(0,0);
+                AllSlaveSockets.put(clientSocket,slave);
                 break;
             case "WAIT":
-                output.write(slaveConnectionAndAck.wait(words).getBytes());
+                response=slaveConnectionAndAck.wait(words);
+                output.write(response.getBytes());
+//                printSlaveOffset();
+
                 break;
             default:
                 output.write("-ERR unknown command\r\n".getBytes());
@@ -322,32 +341,27 @@ public class Main {
                 System.out.println("Error handling Client: " + e.getMessage());
             }
     }
-    public static void sendToSlaves(Vector<String > words) {
-        String cmd = "*";
-        cmd += words.size() / 2;
-        cmd += "\r\n";
-        for (int i = 0; i < words.size(); i++) {
-            cmd += words.get(i);
-            cmd += "\r\n";
+    public static void sendToSlaves(ArrayList<String> words, boolean isReplicationTraffic) {
+        StringBuilder cmdBuilder = new StringBuilder();
+        cmdBuilder.append("*").append(words.size() / 2).append("\r\n");
+        for (String word : words) {
+            cmdBuilder.append(word).append("\r\n");
         }
+        String cmd = cmdBuilder.toString();
+        byte[] cmdBytes = cmd.getBytes(); // Get correct byte length
+
         if (role.equals("master")) {
-            synchronized (AllSlaveSockets) {
-                Iterator<Socket> iterator = AllSlaveSockets.iterator();
+                Iterator<Map.Entry<Socket, Slaves>> iterator = AllSlaveSockets.entrySet().iterator();
                 while (iterator.hasNext()) {
-                    Socket slave = iterator.next();
+                    Map.Entry<Socket, Slaves> entry = iterator.next();
                     try {
-                        slave.getOutputStream().write(cmd.getBytes());
-                        slave.getOutputStream().flush();
+                        entry.getKey().getOutputStream().write(cmdBytes);
+                        entry.getKey().getOutputStream().flush();
+                        if(isReplicationTraffic)entry.getValue().mastersOffset += cmdBytes.length;
                     } catch (IOException e) {
-                        System.out.println("Slave disconnected: " + slave.getRemoteSocketAddress());
                         iterator.remove();
-                        try {
-                            slave.close();
-                        } catch (IOException ignored) {
-                        }
                     }
                 }
-            }
         }
     }
 }

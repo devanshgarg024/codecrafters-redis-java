@@ -1,7 +1,7 @@
-import java.util.Vector;
+import java.util.ArrayList;
 
 public class typeCommand {
-    public static String type(Vector<String> words){
+    public static String type(ArrayList<String> words){
         String response="";
         String key=words.get(3);
         if(Main.db.containsKey(key))response+="+string\r\n";

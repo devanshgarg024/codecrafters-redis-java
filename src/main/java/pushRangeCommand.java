@@ -3,13 +3,13 @@ import java.net.Socket;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Vector;
+import java.util.ArrayList;
 
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 
 public class pushRangeCommand {
-    public static String rpush(Vector<String> words){
+    public static String rpush(ArrayList<String> words){
         String response="";
         String key=words.get(3);
         int numOfElement=(words.size()-4)/2;
@@ -33,7 +33,7 @@ public class pushRangeCommand {
         }
         return response;
     }
-    public static String lpush(Vector<String> words){
+    public static String lpush(ArrayList<String> words){
         String response="";
         String key2=words.get(3);
         int numOfElement2=(words.size()-4)/2;
@@ -58,7 +58,7 @@ public class pushRangeCommand {
         return response;
     }
 
-    public static String lrange(Vector<String> words){
+    public static String lrange(ArrayList<String> words){
         String response="";
 
         if(Main.elementList.containsKey(words.get(3))){
@@ -79,7 +79,7 @@ public class pushRangeCommand {
         }
         return response;
     }
-    public static String llen(Vector<String> words){
+    public static String llen(ArrayList<String> words){
         String response="";
 
         if(Main.elementList.containsKey(words.get(3))){
