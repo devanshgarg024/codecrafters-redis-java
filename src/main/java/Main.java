@@ -122,6 +122,7 @@ public class Main {
                         if (shouldReturn)output.write(response.getBytes());
                 }
             }
+            else{
             switch (words.get(1).toUpperCase()) {
                 case "PING":
                     if (shouldReturn) output.write("+PONG\r\n".getBytes());
@@ -246,6 +247,7 @@ public class Main {
                 default:
                     output.write("-ERR unknown command\r\n".getBytes());
                     break;
+            }
             }
         } catch (IOException e) {
             System.out.println("Error handling Client: " + e.getMessage());
