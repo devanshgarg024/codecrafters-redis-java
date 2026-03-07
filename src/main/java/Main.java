@@ -111,7 +111,7 @@ public class Main {
                         if(shouldReturn)output.write(response.getBytes());
                         break;
                     case "UNSUBSCRIBE":
-                        response=subAndPub.subscribe(words, clientSocket);
+                        response=subAndPub.unsubscribe(words, clientSocket);
                         if(shouldReturn)output.write(response.getBytes());
                         break;
                     case "PSUBSCRIBE":
