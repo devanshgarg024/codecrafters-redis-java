@@ -6,26 +6,48 @@ import java.util.Set;
 public class subAndPub {
     public static String subscribe(ArrayList<String> words, Socket clientSocket){
     String response;
-    int numOfSubs=1;
+    int numOfChannelSubscribed=1;
+    String key=words.get(3);
     if(Main.subs.containsKey(clientSocket)){
-        Main.subs.get(clientSocket).add(words.get(3));
-        numOfSubs=Main.subs.get(clientSocket).size();
+        Main.subs.get(clientSocket).add(key);
+        numOfChannelSubscribed=Main.subs.get(clientSocket).size();
     }
     else{
         Set<String> temp=new HashSet<>();
-        temp.add(words.get(3));
+        temp.add(key);
         Main.subs.put(clientSocket,temp);
-
     }
+        if(Main.channels.containsKey(key)){
+            Main.channels.get(key).add(clientSocket);
+        }
+        else{
+            Set<Socket> temp=new HashSet<>();
+            temp.add(clientSocket);
+            Main.channels.put(key,temp);
+        }
     StringBuilder cmdBuilder = new StringBuilder();
         cmdBuilder.append("*3\r\n$9\r\nsubscribe\r\n");
         cmdBuilder.append("$");
-        cmdBuilder.append(words.get(3).length());
+        cmdBuilder.append(key.length());
         cmdBuilder.append("\r\n");
-        cmdBuilder.append(words.get(3));
+        cmdBuilder.append(key);
         cmdBuilder.append("\r\n");
         cmdBuilder.append(":");
-        cmdBuilder.append(numOfSubs);
+        cmdBuilder.append(numOfChannelSubscribed);
+        cmdBuilder.append("\r\n");
+        response=cmdBuilder.toString();
+        return  response;
+    }
+    public static String publish(ArrayList<String> words, Socket clientSocket){
+        String response;
+        String key=words.get(3);
+        int numOfsubs=0;
+        if(Main.channels.containsKey(key)){
+            numOfsubs=Main.channels.get(key).size();
+        }
+        StringBuilder cmdBuilder = new StringBuilder();
+        cmdBuilder.append(":");
+        cmdBuilder.append(numOfsubs);
         cmdBuilder.append("\r\n");
         response=cmdBuilder.toString();
         return  response;
