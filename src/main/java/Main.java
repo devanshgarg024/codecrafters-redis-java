@@ -118,7 +118,7 @@ public class Main {
                         if(shouldReturn)output.write(response.getBytes());
                         break;
                     default:
-                        response="-ERR Can't execute'"+words.get(1)+ "'in subscribed mode\r\n";
+                        response="-ERR Can't execute '"+words.get(1)+ "' in subscribed mode\r\n";
                         if (shouldReturn)output.write(response.getBytes());
                 }
             }
