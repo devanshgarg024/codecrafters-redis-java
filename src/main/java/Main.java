@@ -109,8 +109,16 @@ public class Main {
                         response=subAndPub.subscribe(words, clientSocket);
                         if(shouldReturn)output.write(response.getBytes());
                         break;
+                    case "UNSUBSCRIBE":
+                        response=subAndPub.subscribe(words, clientSocket);
+                        if(shouldReturn)output.write(response.getBytes());
+                        break;
+                    case "PSUBSCRIBE":
+                        response=subAndPub.subscribe(words, clientSocket);
+                        if(shouldReturn)output.write(response.getBytes());
+                        break;
                     default:
-                        response="ERR Can't execute'"+words.get(1)+ "'in subscribed mode\r\n";
+                        response="-ERR Can't execute'"+words.get(1)+ "'in subscribed mode\r\n";
                         if (shouldReturn)output.write(response.getBytes());
                 }
             }
