@@ -103,7 +103,7 @@ public class Main {
             if(subs.containsKey(clientSocket)&&!subs.get(clientSocket).isEmpty()){
                 switch (words.get(1).toUpperCase()) {
                     case "PING":
-                        if (shouldReturn) output.write("+PONG\r\n".getBytes());
+                        if (shouldReturn) output.write("*2\r\n$4\r\npong\r\n$0\r\n\r\n".getBytes());
                         break;
                     case "SUBSCRIBE":
                         response=subAndPub.subscribe(words, clientSocket);
