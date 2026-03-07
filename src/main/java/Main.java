@@ -196,7 +196,7 @@ public class Main {
                     if(shouldReturn)output.write(response.getBytes());
                     break;
                 case "PUBLISH":
-                    response=subAndPub.publish(words, clientSocket);
+                    response=subAndPub.publish(words);
                     if(shouldReturn)output.write(response.getBytes());
                     break;
 //                case "KEYS":
