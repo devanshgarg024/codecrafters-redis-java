@@ -100,7 +100,20 @@ public class Main {
     public static void executeCommand(ArrayList<String> words, OutputStream output, Socket clientSocket, boolean shouldReturn) {
         try {
             String response;
-
+            if(subs.containsKey(clientSocket)&&!subs.get(clientSocket).isEmpty()){
+                switch (words.get(1).toUpperCase()) {
+                    case "PING":
+                        if (shouldReturn) output.write("+PONG\r\n".getBytes());
+                        break;
+                    case "SUBSCRIBE":
+                        response=subAndPub.subscribe(words, clientSocket);
+                        if(shouldReturn)output.write(response.getBytes());
+                        break;
+                    default:
+                        response="ERR Can't execute'"+words.get(1)+ "'in subscribed mode\r\n";
+                        if (shouldReturn)output.write(response.getBytes());
+                }
+            }
             switch (words.get(1).toUpperCase()) {
                 case "PING":
                     if (shouldReturn) output.write("+PONG\r\n".getBytes());
