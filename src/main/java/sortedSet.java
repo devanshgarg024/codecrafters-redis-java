@@ -50,6 +50,22 @@ class RedisSortedSet {
     }
     public ArrayList<String> range(int start,int end){
         ArrayList<String> emp=new ArrayList<>();
+        if(start<-1*members.size()){
+            start=0;
+        }
+        if(start> members.size()-1){
+            start= members.size()-1;
+        }
+        if(end<-1*members.size()){
+            end=0;
+        }
+        if(end> members.size()-1){
+            end= members.size()-1;
+        }
+        start+= members.size();
+        start%= members.size();
+        end+= members.size();
+        end%= members.size();
         if(members.size()-1<end)end= members.size()-1;
         if(start<0)start=0;
         if(start>end){
