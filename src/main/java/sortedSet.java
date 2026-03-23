@@ -1,7 +1,5 @@
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.TreeSet;
+import java.util.*;
+
 class MemberScore implements Comparable<MemberScore> {
     public String member;
     public double score;
@@ -50,6 +48,22 @@ class RedisSortedSet {
         double score=members.get(member);
         return sortedSet.headSet(new MemberScore(member,score)).size();
     }
+    public ArrayList<String> range(int start,int end){
+        ArrayList<String> emp=new ArrayList<>();
+        if(members.size()-1<end)end= members.size()-1;
+        if(start<0)start=0;
+        if(start>end){
+            return emp;
+        }
+        List<MemberScore> list = new ArrayList<>(sortedSet);
+        List<MemberScore> indexedRange = list.subList(start, end+1);
+        ArrayList<String> ind=new ArrayList<>();
+        for(MemberScore it:indexedRange){
+            ind.add(it.member);
+        }
+        return ind;
+
+    }
 }
 public class sortedSet {
     public static String zadd(ArrayList<String> words){
@@ -88,7 +102,29 @@ public class sortedSet {
         }
         else{
             cmdBuilder.append("$-1\r\n");
+        }
+        return cmdBuilder.toString();
+    }
+    public static String zrange(ArrayList<String> words){
+        String key=words.get(3);
+        int  start=Integer.parseInt(words.get(5));
+        int  end=Integer.parseInt(words.get(7));
+        StringBuilder cmdBuilder = new StringBuilder();
+        if(!Main.zset.containsKey(key)){
+            cmdBuilder.append("*0\r\n");
             return cmdBuilder.toString();
+        }
+        RedisSortedSet st=Main.zset.get(key);
+        ArrayList<String> range=st.range(start,end);
+        cmdBuilder.append("*");
+        cmdBuilder.append(range.size());
+        cmdBuilder.append("\r\n");
+        for(String ind:range){
+            cmdBuilder.append("$");
+            cmdBuilder.append(ind.length());
+            cmdBuilder.append("\r\n");
+            cmdBuilder.append(ind);
+            cmdBuilder.append("\r\n");
         }
         return cmdBuilder.toString();
     }

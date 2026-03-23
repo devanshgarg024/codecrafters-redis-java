@@ -209,6 +209,10 @@ public class Main {
                     response = sortedSet.zrank(words);
                     if (shouldReturn) output.write(response.getBytes());
                     break;
+                case "ZRANGE":
+                    response = sortedSet.zrange(words);
+                    if (shouldReturn) output.write(response.getBytes());
+                    break;
 //                case "KEYS":
 //                    String format=words.get(3);
 //                    format=format.substring(0,format.length()-1);
