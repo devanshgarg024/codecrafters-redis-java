@@ -48,6 +48,9 @@ class RedisSortedSet {
         double score=members.get(member);
         return sortedSet.headSet(new MemberScore(member,score)).size();
     }
+    public int card(){
+        return sortedSet.size();
+    }
     public ArrayList<String> range(int start,int end){
         ArrayList<String> emp=new ArrayList<>();
         if(start<-1*members.size()){
@@ -141,6 +144,21 @@ public class sortedSet {
             cmdBuilder.append("\r\n");
             cmdBuilder.append(ind);
             cmdBuilder.append("\r\n");
+        }
+        return cmdBuilder.toString();
+    }
+    public static String zcard(ArrayList<String> words){
+        String key=words.get(3);
+        StringBuilder cmdBuilder = new StringBuilder();
+        if(Main.zset.containsKey(key)){
+            RedisSortedSet st=Main.zset.get(key);
+            int rank=st.card();
+            cmdBuilder.append(":");
+            cmdBuilder.append(rank);
+            cmdBuilder.append("\r\n");
+        }
+        else{
+            cmdBuilder.append(":0\r\n");
         }
         return cmdBuilder.toString();
     }
