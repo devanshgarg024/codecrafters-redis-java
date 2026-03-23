@@ -221,6 +221,11 @@ public class Main {
                     response = sortedSet.zscore(words);
                     if (shouldReturn) output.write(response.getBytes());
                     break;
+                case "ZREM":
+                    sendToSlaves(words, true);
+                    response = sortedSet.zrem(words);
+                    if (shouldReturn) output.write(response.getBytes());
+                    break;
 //                case "KEYS":
 //                    String format=words.get(3);
 //                    format=format.substring(0,format.length()-1);

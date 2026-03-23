@@ -90,6 +90,15 @@ class RedisSortedSet {
     public int card(){
         return sortedSet.size();
     }
+    public int rem(String member) {
+        if (members.containsKey(member)) {
+            double oldScore = members.get(member);
+            sortedSet.remove(new MemberScore(member, oldScore));
+            members.remove(member);
+            return 1;
+        }
+        return 0;
+    }
 }
 public class sortedSet {
     public static String zadd(ArrayList<String> words){
@@ -187,7 +196,23 @@ public class sortedSet {
             cmdBuilder.append("\r\n");
         }
         else{
-            cmdBuilder.append("%-1\r\n");
+            cmdBuilder.append("$-1\r\n");
+        }
+        return cmdBuilder.toString();
+    }
+    public static String zrem(ArrayList<String> words){
+        String key=words.get(3);
+        String member=words.get(5);
+        StringBuilder cmdBuilder = new StringBuilder();
+        if(Main.zset.containsKey(key)){
+            RedisSortedSet st=Main.zset.get(key);
+            int isRemoved=st.rem(member);
+            cmdBuilder.append(":");
+            cmdBuilder.append(isRemoved);
+            cmdBuilder.append("\r\n");
+        }
+        else{
+            cmdBuilder.append(":0\r\n");
         }
         return cmdBuilder.toString();
     }
