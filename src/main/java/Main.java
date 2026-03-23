@@ -28,6 +28,7 @@ public class Main {
     public static ConcurrentHashMap<String, List<String>> elementList = new ConcurrentHashMap<>();
     public static ConcurrentHashMap<Socket, Set<String>> subs = new ConcurrentHashMap<>();
     public static ConcurrentHashMap<String, Set<Socket>> channels = new ConcurrentHashMap<>();
+    public static ConcurrentHashMap<String, RedisSortedSet> zset = new ConcurrentHashMap<>();
 
     public static String role = "master";
     public static String mastersReplID = "?";
@@ -114,10 +115,10 @@ public class Main {
                         response=subAndPub.unsubscribe(words, clientSocket);
                         if(shouldReturn)output.write(response.getBytes());
                         break;
-                    case "PSUBSCRIBE":
-                        response=subAndPub.subscribe(words, clientSocket);
-                        if(shouldReturn)output.write(response.getBytes());
-                        break;
+//                    case "PSUBSCRIBE":
+//                        response=subAndPub.subscribe(words, clientSocket);
+//                        if(shouldReturn)output.write(response.getBytes());
+//                        break;
                     default:
                         response="-ERR Can't execute '"+words.get(1)+ "' in subscribed mode\r\n";
                         if (shouldReturn)output.write(response.getBytes());
@@ -198,6 +199,11 @@ public class Main {
                 case "PUBLISH":
                     response=subAndPub.publish(words);
                     if(shouldReturn)output.write(response.getBytes());
+                    break;
+                case "ZADD":
+                    sendToSlaves(words, true);
+                    response = sortedSet.zadd(words);
+                    if (shouldReturn) output.write(response.getBytes());
                     break;
 //                case "KEYS":
 //                    String format=words.get(3);
