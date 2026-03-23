@@ -43,6 +43,13 @@ class RedisSortedSet {
 
         return 1;
     }
+    public int rank(String member){
+        if(!members.containsKey(member)){
+            return -1;
+        }
+        double score=members.get(member);
+        return sortedSet.headSet(new MemberScore(member,score)).size();
+    }
 }
 public class sortedSet {
     public static String zadd(ArrayList<String> words){
@@ -62,6 +69,27 @@ public class sortedSet {
         cmdBuilder.append(":");
         cmdBuilder.append(isNew);
         cmdBuilder.append("\r\n");
+        return cmdBuilder.toString();
+    }
+    public static String zrank(ArrayList<String> words){
+        String key=words.get(3);
+        String member=words.get(5);
+        StringBuilder cmdBuilder = new StringBuilder();
+        if(Main.zset.containsKey(key)){
+            RedisSortedSet st=Main.zset.get(key);
+            int rank=st.rank(member);
+            if(rank==-1){
+                cmdBuilder.append("$-1\r\n");
+                return cmdBuilder.toString();
+            }
+            cmdBuilder.append(":");
+            cmdBuilder.append(rank);
+            cmdBuilder.append("\r\n");
+        }
+        else{
+            cmdBuilder.append("$-1\r\n");
+            return cmdBuilder.toString();
+        }
         return cmdBuilder.toString();
     }
 }
