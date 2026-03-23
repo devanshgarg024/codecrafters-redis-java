@@ -152,9 +152,9 @@ public class sortedSet {
         StringBuilder cmdBuilder = new StringBuilder();
         if(Main.zset.containsKey(key)){
             RedisSortedSet st=Main.zset.get(key);
-            int rank=st.card();
+            int numOfElement=st.card();
             cmdBuilder.append(":");
-            cmdBuilder.append(rank);
+            cmdBuilder.append(numOfElement);
             cmdBuilder.append("\r\n");
         }
         else{
