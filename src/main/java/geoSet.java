@@ -1,6 +1,6 @@
 import java.util.*;
 
-class geoMemberScore implements Comparable<geoMemberScore> {
+class geoMemberScore  {
     public String member;
     public double longitude;
     public double latitude;
