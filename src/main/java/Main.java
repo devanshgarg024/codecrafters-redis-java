@@ -243,6 +243,10 @@ public class Main {
                     response = geoSet.geosearch(words);
                     if (shouldReturn) output.write(response.getBytes());
                     break;
+                case "ACL":
+                    response = Authentication.acl(words);
+                    if (shouldReturn) output.write(response.getBytes());
+                    break;
 
 //                case "KEYS":
 //                    String format=words.get(3);
