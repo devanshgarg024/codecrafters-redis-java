@@ -240,7 +240,7 @@ public class Main {
                     if (shouldReturn) output.write(response.getBytes());
                     break;
                 case "GEOSEARCH":
-                    response = geoSet.geodist(words);
+                    response = geoSet.geosearch(words);
                     if (shouldReturn) output.write(response.getBytes());
                     break;
 

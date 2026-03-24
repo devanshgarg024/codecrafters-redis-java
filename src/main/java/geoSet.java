@@ -1,3 +1,5 @@
+import com.sun.jdi.request.StepRequest;
+
 import java.util.*;
 
 public class geoSet {
@@ -112,9 +114,10 @@ public class geoSet {
         RedisSortedSet st=Main.zset.get(key);
             for (Map.Entry<String, Double> entry : st.members.entrySet()) {
                 String member = entry.getKey();
-                Double score = entry.getValue();
-                long geoCode =Long.parseLong(String.valueOf(score));
+                String score = String.valueOf(entry.getValue());
+                long geoCode =(long) Double.parseDouble(score);
                 Decode.Coordinates coordinates = Decode.decode(geoCode);
+
                 Double dist=geohashGetDistance(coordinates.longitude,coordinates.latitude,longitude,latitude);
                 if(dist<=rad){
                     res.add(member);
