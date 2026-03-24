@@ -29,6 +29,7 @@ public class Main {
     public static ConcurrentHashMap<Socket, Set<String>> subs = new ConcurrentHashMap<>();
     public static ConcurrentHashMap<String, Set<Socket>> channels = new ConcurrentHashMap<>();
     public static ConcurrentHashMap<String, RedisSortedSet> zset = new ConcurrentHashMap<>();
+    public static ConcurrentHashMap<String, geoSortedSet> geoset = new ConcurrentHashMap<>();
 
     public static String role = "master";
     public static String mastersReplID = "?";
@@ -224,6 +225,11 @@ public class Main {
                 case "ZREM":
                     sendToSlaves(words, true);
                     response = sortedSet.zrem(words);
+                    if (shouldReturn) output.write(response.getBytes());
+                    break;
+                case "GEOADD":
+                    sendToSlaves(words, true);
+                    response = geoSet.geoadd(words);
                     if (shouldReturn) output.write(response.getBytes());
                     break;
 //                case "KEYS":
