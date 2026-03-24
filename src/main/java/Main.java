@@ -231,6 +231,10 @@ public class Main {
                     response = geoSet.geoadd(words);
                     if (shouldReturn) output.write(response.getBytes());
                     break;
+                case "GEOPOS":
+                    response = geoSet.geopos(words);
+                    if (shouldReturn) output.write(response.getBytes());
+                    break;
 //                case "KEYS":
 //                    String format=words.get(3);
 //                    format=format.substring(0,format.length()-1);
