@@ -10,7 +10,7 @@ public class Authentication {
             cmdBuilder.append("*4\r\n");
             cmdBuilder.append("$5\r\nflags\r\n");
             cmdBuilder.append("*1\r\n$6\r\nnopass\r\n");
-            cmdBuilder.append("$8\r\npassword\r\n");
+            cmdBuilder.append("$9\r\npasswords\r\n");
             cmdBuilder.append("*0\r\n");
             return cmdBuilder.toString();
         }
