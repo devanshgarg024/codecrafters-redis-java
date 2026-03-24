@@ -21,17 +21,14 @@ class geoMemberScore  {
 //    }
 }
 class geoSortedSet {
-    private Map<String, List> members;
+    private Map<String, List<Double>> members=new HashMap<>() ;
     public int add(double longitude,double latitude, String member) {
         if (members.containsKey(member)) {
-//            double oldScore = members.get(member);
-//            if (oldScore == score) {
-//                return 0;
-//            }
-//            sortedSet.remove(new geoMemberScore(member, oldScore));
-//            members.put(member, score);
-//            sortedSet.add(new geoMemberScore(member, score));
-//            return 0;
+            List<Double> st=new ArrayList<>();
+            st.add(longitude);
+            st.add(latitude);
+            members.put(member, st);
+            return 0;
         }
         List<Double> st=new ArrayList<>();
         st.add(longitude);
@@ -39,64 +36,6 @@ class geoSortedSet {
         members.put(member, st);
         return 1;
     }
-//    public int rank(String member){
-//        if(!members.containsKey(member)){
-//            return -1;
-//        }
-//        double score=members.get(member);
-//        return sortedSet.headSet(new geoMemberScore(member,score)).size();
-//    }
-//    public ArrayList<String> range(int start,int end){
-//        ArrayList<String> emp=new ArrayList<>();
-//        if(start<-1*members.size()){
-//            start=0;
-//        }
-//        if(start> members.size()-1){
-//            start= members.size()-1;
-//        }
-//        if(end<-1*members.size()){
-//            end=0;
-//        }
-//        if(end> members.size()-1){
-//            end= members.size()-1;
-//        }
-//        start+= members.size();
-//        start%= members.size();
-//        end+= members.size();
-//        end%= members.size();
-//        if(members.size()-1<end)end= members.size()-1;
-//        if(start<0)start=0;
-//        if(start>end){
-//            return emp;
-//        }
-//        List<geoMemberScore> list = new ArrayList<>(sortedSet);
-//        List<geoMemberScore> indexedRange = list.subList(start, end+1);
-//        ArrayList<String> ind=new ArrayList<>();
-//        for(geoMemberScore it:indexedRange){
-//            ind.add(it.member);
-//        }
-//        return ind;
-//
-//    }
-//    public String score(String member){
-//        if(!members.containsKey(member)){
-//            return "";
-//        }
-//        String val=String.valueOf(members.get(member));
-//        return val;
-//    }
-//    public int card(){
-//        return sortedSet.size();
-//    }
-//    public int rem(String member) {
-//        if (members.containsKey(member)) {
-//            double oldScore = members.get(member);
-//            sortedSet.remove(new geoMemberScore(member, oldScore));
-//            members.remove(member);
-//            return 1;
-//        }
-//        return 0;
-//    }
 }
 public class geoSet {
     public static String geoadd(ArrayList<String> words){
