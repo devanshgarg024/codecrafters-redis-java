@@ -7,9 +7,11 @@ public class Authentication {
         }
         else if(words.get(3).equals("GETUSER")){
             StringBuilder cmdBuilder=new StringBuilder();
-            cmdBuilder.append("*2\r\n");
+            cmdBuilder.append("*4\r\n");
             cmdBuilder.append("$5\r\nflags\r\n");
             cmdBuilder.append("*1\r\n$6\r\nnopass\r\n");
+            cmdBuilder.append("$8\r\npassword\r\n");
+            cmdBuilder.append("*0\r\n");
             return cmdBuilder.toString();
         }
         return "";
