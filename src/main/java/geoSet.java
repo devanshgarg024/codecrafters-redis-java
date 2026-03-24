@@ -1,6 +1,26 @@
 import java.util.*;
 
 public class geoSet {
+    private static final double EARTH_RADIUS_IN_METERS = 6372797.560856;
+    private static double geohashGetLatDistance(double lat1d, double lat2d) {
+        return EARTH_RADIUS_IN_METERS * Math.abs(Math.toRadians(lat2d) - Math.toRadians(lat1d));
+    }
+    public static double geohashGetDistance(double lon1d, double lat1d, double lon2d, double lat2d) {
+        double lat1r, lon1r, lat2r, lon2r, u, v, a;
+
+        lon1r = Math.toRadians(lon1d);
+        lon2r = Math.toRadians(lon2d);
+
+        v = Math.sin((lon2r - lon1r) / 2.0);
+        if (v == 0.0) {
+            return geohashGetLatDistance(lat1d, lat2d);
+        }
+        lat1r = Math.toRadians(lat1d);
+        lat2r = Math.toRadians(lat2d);
+        u = Math.sin((lat2r - lat1r) / 2.0);
+        a = u * u + Math.cos(lat1r) * Math.cos(lat2r) * v * v;
+        return 2.0 * EARTH_RADIUS_IN_METERS * Math.asin(Math.sqrt(a));
+    }
     public static String geoadd(ArrayList<String> words){
         String key=words.get(3);
         String member=words.get(9);
@@ -66,5 +86,21 @@ public class geoSet {
             }
         }
         return cmdBuilder.toString();
+    }
+    public static String geodist(ArrayList<String> words){
+        String key=words.get(3);
+        String member1=words.get(5);
+        String member2=words.get(7);
+        RedisSortedSet st=Main.zset.get(key);
+        String score1=st.score(member1);
+        String score2=st.score(member2);
+        long geoCode1 = (long) Double.parseDouble(score1);
+        Decode.Coordinates coordinates1 = Decode.decode(geoCode1);
+        long geoCode2 = (long) Double.parseDouble(score2);
+        Decode.Coordinates coordinates2 = Decode.decode(geoCode2);
+        Double dist=geohashGetDistance(coordinates1.longitude,coordinates1.latitude,coordinates2.longitude,coordinates2.latitude);
+        String cmdBuilder = "$" + String.valueOf(dist).length() + "\r\n" +
+                dist + "\r\n";
+        return cmdBuilder;
     }
 }
