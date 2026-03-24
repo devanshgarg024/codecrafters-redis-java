@@ -29,7 +29,6 @@ public class Main {
     public static ConcurrentHashMap<Socket, Set<String>> subs = new ConcurrentHashMap<>();
     public static ConcurrentHashMap<String, Set<Socket>> channels = new ConcurrentHashMap<>();
     public static ConcurrentHashMap<String, RedisSortedSet> zset = new ConcurrentHashMap<>();
-    public static ConcurrentHashMap<String, geoSortedSet> geoset = new ConcurrentHashMap<>();
 
     public static String role = "master";
     public static String mastersReplID = "?";
