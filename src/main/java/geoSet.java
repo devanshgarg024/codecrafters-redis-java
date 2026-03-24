@@ -23,6 +23,9 @@ class geoMemberScore  {
 class geoSortedSet {
     private Map<String, List<Double>> members=new HashMap<>() ;
     public int add(double longitude,double latitude, String member) {
+        if(longitude>180||longitude<-180||latitude>85.05112878||latitude<-85.05112878){
+            return -1;
+        }
         if (members.containsKey(member)) {
             List<Double> st=new ArrayList<>();
             st.add(longitude);
@@ -53,6 +56,11 @@ public class geoSet {
             Main.geoset.put(key,st);
         }
         StringBuilder cmdBuilder = new StringBuilder();
+        if(isNew==-1){
+            cmdBuilder.append("-ERR invalid longitude,latitude pair ");
+            cmdBuilder.append(longitude).append(",").append(latitude).append("\r\n");
+            return cmdBuilder.toString();
+        }
         cmdBuilder.append(":");
         cmdBuilder.append(isNew);
         cmdBuilder.append("\r\n");
