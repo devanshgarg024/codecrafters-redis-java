@@ -42,25 +42,28 @@ public class geoSet {
         cmdBuilder.append("*").append(members.size()).append("\r\n");
         if(Main.zset.containsKey(key)){
                 RedisSortedSet st=Main.zset.get(key);
-                System.out.println(members);
             for(String member:members){
                 String score=st.score(member);
                 if(score.isEmpty()){
                     cmdBuilder.append("*-1\r\n");
-                    return cmdBuilder.toString();
                 }
-                Decode.Coordinates coordinates=Decode.decode(Long.parseLong(score));
-                String longitude=String.valueOf(coordinates.longitude);
-                String latitude=String.valueOf(coordinates.latitude);
-                cmdBuilder.append("*2\r\n");
-                cmdBuilder.append("$").append(longitude.length()).append("\r\n");
-                cmdBuilder.append(longitude).append("\r\n");
-                cmdBuilder.append("$").append(latitude.length()).append("\r\n");
-                cmdBuilder.append(latitude).append("\r\n");
+                else{
+                    long geoCode = (long) Double.parseDouble(score);
+                    Decode.Coordinates coordinates = Decode.decode(geoCode);
+                    String longitude=String.valueOf(coordinates.longitude);
+                    String latitude=String.valueOf(coordinates.latitude);
+                    cmdBuilder.append("*2\r\n");
+                    cmdBuilder.append("$").append(longitude.length()).append("\r\n");
+                    cmdBuilder.append(longitude).append("\r\n");
+                    cmdBuilder.append("$").append(latitude.length()).append("\r\n");
+                    cmdBuilder.append(latitude).append("\r\n");
+                }
             }
         }
         else{
-            cmdBuilder.append("*-1\r\n");
+            for(String member:members) {
+                cmdBuilder.append("*-1\r\n");
+            }
         }
         return cmdBuilder.toString();
     }
