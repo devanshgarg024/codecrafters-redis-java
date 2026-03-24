@@ -19,7 +19,7 @@ class MemberScore implements Comparable<MemberScore> {
     }
 }
 class RedisSortedSet {
-    private Map<String, Double> members;
+    public Map<String, Double> members;
     private TreeSet<MemberScore> sortedSet;
     public RedisSortedSet() {
         this.members = new HashMap<>();

@@ -239,6 +239,11 @@ public class Main {
                     response = geoSet.geodist(words);
                     if (shouldReturn) output.write(response.getBytes());
                     break;
+                case "GEOSEARCH":
+                    response = geoSet.geodist(words);
+                    if (shouldReturn) output.write(response.getBytes());
+                    break;
+
 //                case "KEYS":
 //                    String format=words.get(3);
 //                    format=format.substring(0,format.length()-1);

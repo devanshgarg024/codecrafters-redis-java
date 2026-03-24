@@ -103,4 +103,29 @@ public class geoSet {
                 dist + "\r\n";
         return cmdBuilder;
     }
+    public static String geosearch(ArrayList<String> words){
+        String key=words.get(3);
+        Double longitude=Double.parseDouble(words.get(7));
+        Double latitude=Double.parseDouble(words.get(9));
+        Double rad=Double.parseDouble(words.get(13));
+        List<String>res =new ArrayList<>();
+        RedisSortedSet st=Main.zset.get(key);
+            for (Map.Entry<String, Double> entry : st.members.entrySet()) {
+                String member = entry.getKey();
+                Double score = entry.getValue();
+                long geoCode =Long.parseLong(String.valueOf(score));
+                Decode.Coordinates coordinates = Decode.decode(geoCode);
+                Double dist=geohashGetDistance(coordinates.longitude,coordinates.latitude,longitude,latitude);
+                if(dist<=rad){
+                    res.add(member);
+                }
+            }
+        StringBuilder cmdBuilder = new StringBuilder();
+            cmdBuilder.append("*").append(res.size()).append("\r\n");
+            for(String member: res){
+                cmdBuilder.append("$").append(member.length()).append("\r\n");
+                cmdBuilder.append(member).append("\r\n");
+            }
+        return cmdBuilder.toString();
+    }
 }
