@@ -29,6 +29,7 @@ public class Main {
     public static ConcurrentHashMap<Socket, Set<String>> subs = new ConcurrentHashMap<>();
     public static ConcurrentHashMap<String, Set<Socket>> channels = new ConcurrentHashMap<>();
     public static ConcurrentHashMap<String, RedisSortedSet> zset = new ConcurrentHashMap<>();
+    public static ConcurrentHashMap<Socket, String> password = new ConcurrentHashMap<>();
 
     public static String role = "master";
     public static String mastersReplID = "?";
@@ -244,7 +245,7 @@ public class Main {
                     if (shouldReturn) output.write(response.getBytes());
                     break;
                 case "ACL":
-                    response = Authentication.acl(words);
+                    response = Authentication.acl(words,clientSocket);
                     if (shouldReturn) output.write(response.getBytes());
                     break;
 
