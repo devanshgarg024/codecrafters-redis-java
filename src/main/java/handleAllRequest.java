@@ -11,6 +11,12 @@ public class handleAllRequest {
 
     static void handleRequest(Socket clientSocket) {
         try (clientSocket) {
+            if(Main.password.containsKey("default")){
+                Main.isAuthenticated.put(clientSocket,false);
+            }
+            else{
+                Main.isAuthenticated.put(clientSocket,true);
+            }
             System.out.println("Processing on: " + Thread.currentThread());
             BufferedReader reader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
             OutputStream output = clientSocket.getOutputStream();

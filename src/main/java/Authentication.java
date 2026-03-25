@@ -37,7 +37,12 @@ public class Authentication {
     public static String acl(ArrayList<String>words, Socket clientSocket){
             StringBuilder cmdBuilder=new StringBuilder();
         if(words.get(3).equals("WHOAMI")){
-            return "$7\r\ndefault\r\n";
+            if(Main.isAuthenticated.get(clientSocket)){
+                return "$7\r\ndefault\r\n";
+            }
+            else{
+                return "-NOAUTH Authentication required.\r\n";
+            }
         }
         else if(words.get(3).equals("GETUSER")){
             cmdBuilder.append("*4\r\n");
@@ -45,7 +50,7 @@ public class Authentication {
             if(Main.password.containsKey(clientSocket)){
                 cmdBuilder.append("*0\r\n");
                 cmdBuilder.append("$9\r\npasswords\r\n");
-                String encryptedPassword=Main.password.get(clientSocket);
+                String encryptedPassword=Main.password.get("default");
                 cmdBuilder.append("*1\r\n$").append(encryptedPassword.length()).append("\r\n").append(encryptedPassword).append("\r\n");
             }
             else{
@@ -57,25 +62,26 @@ public class Authentication {
         }
         else if(words.get(3).equals("SETUSER")){
             String encryptedPassword=generateSHA256Hash(words.get(7).substring(1));
+            String username=words.get(5);
             assert encryptedPassword != null;
-            Main.password.put(clientSocket,encryptedPassword);
+            Main.password.put(username,encryptedPassword);
             cmdBuilder.append("+OK\r\n");
             return cmdBuilder.toString();
 
         }
         return "";
     }
-    public static String auth(ArrayList<String>words, Socket clientSocket) {
+    public static String auth(ArrayList<String>words, Socket clientSocket){
         String passwordSubmitted=generateSHA256Hash(words.get(5));
-        String actualPassword=Main.password.get(clientSocket);
+        String actualPassword=Main.password.get("default");
         assert passwordSubmitted != null;
         if(passwordSubmitted.equals(actualPassword)){
+            Main.isAuthenticated.put(clientSocket,true);
             return "+OK\r\n";
         }
         else {
             return "-WRONGPASS invalid username-password pair or user is disabled.\r\n";
         }
-
     }
 
 }
