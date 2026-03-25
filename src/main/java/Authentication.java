@@ -68,6 +68,7 @@ public class Authentication {
     public static String auth(ArrayList<String>words, Socket clientSocket) {
         String passwordSubmitted=generateSHA256Hash(words.get(5));
         String actualPassword=Main.password.get(clientSocket);
+        assert passwordSubmitted != null;
         if(passwordSubmitted.equals(actualPassword)){
             return "+OK\r\n";
         }
