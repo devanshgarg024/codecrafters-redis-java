@@ -47,7 +47,7 @@ public class Authentication {
         else if(words.get(3).equals("GETUSER")){
             cmdBuilder.append("*4\r\n");
             cmdBuilder.append("$5\r\nflags\r\n");
-            if(Main.password.containsKey(clientSocket)){
+            if(Main.password.containsKey("default")){
                 cmdBuilder.append("*0\r\n");
                 cmdBuilder.append("$9\r\npasswords\r\n");
                 String encryptedPassword=Main.password.get("default");
