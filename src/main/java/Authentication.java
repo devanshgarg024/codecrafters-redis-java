@@ -65,4 +65,16 @@ public class Authentication {
         }
         return "";
     }
+    public static String auth(ArrayList<String>words, Socket clientSocket) {
+        String passwordSubmitted=generateSHA256Hash(words.get(5));
+        String actualPassword=Main.password.get(clientSocket);
+        if(passwordSubmitted.equals(actualPassword)){
+            return "+OK\r\n";
+        }
+        else {
+            return "-WRONGPASS invalid username-password pair or user is disabled.\r\n";
+        }
+
+    }
+
 }

@@ -248,6 +248,10 @@ public class Main {
                     response = Authentication.acl(words,clientSocket);
                     if (shouldReturn) output.write(response.getBytes());
                     break;
+                case "AUTH":
+                    response = Authentication.auth(words,clientSocket);
+                    if (shouldReturn) output.write(response.getBytes());
+                    break;
 
 //                case "KEYS":
 //                    String format=words.get(3);
